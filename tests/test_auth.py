@@ -21,10 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 from __future__ import unicode_literals, absolute_import, print_function
-from .config import SenseTTestCase, username, tape
+from .config import SensorApiTestCase, username, tape
 
+import unittest
+import six
+if six.PY3:
+    from unittest.case import skip
+else:
+    from unittest2.case import skip
 
-class AuthTestCase(SenseTTestCase):
+class AuthTestCase(SensorApiTestCase):
     @tape.use_cassette('test_credentials_configured.json')
     def test_credentials_configured(self):
         assert self.api.me().id == username
@@ -32,5 +38,5 @@ class AuthTestCase(SenseTTestCase):
     @tape.use_cassette('test_roles.json')
     def test_roles(self):
         api_roles = self.api.me().roles
-        assert len(api_roles) == 2
-        assert api_roles[0].id == "TourTrackerAdmin"
+        assert len(api_roles) >= 1 #at least one role
+

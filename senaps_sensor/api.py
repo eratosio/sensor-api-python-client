@@ -23,10 +23,10 @@ THE SOFTWARE.
 """
 from __future__ import unicode_literals, absolute_import, print_function
 
-from sensetdp.binder import bind_api
-from sensetdp.error import SenseTError
-from sensetdp.parsers import ModelParser, Parser
-from sensetdp.utils import list_to_csv
+from senaps_sensor.binder import bind_api
+from senaps_sensor.error import SenapsError
+from senaps_sensor.parsers import ModelParser, Parser
+from senaps_sensor.utils import list_to_csv
 
 
 class API(object):

@@ -25,7 +25,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import enum
 
-from sensetdp.error import SenseTError
+from senaps_sensor.error import SenapsError
 
 """
 Vocabulary util functions
@@ -37,7 +37,7 @@ def find_observed_property(prop):
         for member in t:
             if member.value == prop:
                 return member
-    raise SenseTError("Observed property not found.")
+    raise SenapsError("Observed property not found.")
 
 
 def find_unit_of_measurement(unit):
@@ -45,7 +45,7 @@ def find_unit_of_measurement(unit):
         for member in t:
             if member.value == unit:
                 return member
-    raise SenseTError("Unit of measurement not found.")
+    raise SenapsError("Unit of measurement not found.")
 
 
 """

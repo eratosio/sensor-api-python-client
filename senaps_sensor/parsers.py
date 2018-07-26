@@ -26,9 +26,9 @@ from __future__ import print_function, unicode_literals, absolute_import
 
 import six
 
-from sensetdp.models import ModelFactory
-from sensetdp.utils import import_simplejson
-from sensetdp.error import SenseTError
+from senaps_sensor.models import ModelFactory
+from senaps_sensor.utils import import_simplejson
+from senaps_sensor.error import SenapsError
 
 
 if six.PY2:
@@ -78,7 +78,7 @@ class JSONParser(Parser):
         try:
             json = self.json_lib.loads(payload)
         except Exception as e:
-            raise SenseTError('Failed to parse JSON payload: %s' % e)
+            raise SenapsError('Failed to parse JSON payload: %s' % e)
 
         needs_cursors = 'cursor' in method.session.params
         if needs_cursors and isinstance(json, dict):
@@ -113,7 +113,7 @@ class ModelParser(JSONParser):
                 return
             model = getattr(self.model_factory, method.payload_type)
         except AttributeError:
-            raise SenseTError('No model for this payload type: '
+            raise SenapsError('No model for this payload type: '
                              '%s' % method.payload_type)
 
         json = JSONParser.parse(self, method, payload)
@@ -143,7 +143,7 @@ class PandasObservationParser(Parser):
         # Validate media type.
         media_type = method.query_params.get('media', None)
         if media_type != 'csv':
-            raise SenseTError('PandasObservationParser requires CSV media type (media type "{}" is not supported).'.format(media_type))
+            raise SenapsError('PandasObservationParser requires CSV media type (media type "{}" is not supported).'.format(media_type))
         
         # Skip header information.
         stream_ids = method.query_params['streamid'].split(',') # NOTE: this WILL break if stream IDs contain commas (need to properly parse as CSV).

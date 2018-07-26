@@ -22,22 +22,23 @@ THE SOFTWARE.
 """
 from __future__ import unicode_literals, absolute_import, print_function
 
-from sensetdp.api import API
+from senaps_sensor.api import API
 
 import vcr
 import os
 import six
 from distutils.util import strtobool
 
-from sensetdp.auth import HTTPBasicAuth
+from senaps_sensor.auth import HTTPBasicAuth
 
 if six.PY3:
     import unittest
 else:
     import unittest2 as unittest
 
-username = os.environ.get('SENSET_DP_USERNAME', 'username')
-password = os.environ.get('SENSET_DP_PASSWORD', 'password')
+username = os.environ.get('SENAPS_USERNAME', 'username')
+password = os.environ.get('SENAPS_PASSWORD', 'password')
+host = os.environ.get('API_BASE', 'sensor-cloud.io')
 use_replay = bool(strtobool(os.environ.get('USE_REPLAY', "0")))
 
 
@@ -49,10 +50,9 @@ tape = vcr.VCR(
     record_mode='none' if use_replay else 'all',
 )
 
-
-class SenseTTestCase(unittest.TestCase):
+class SensorApiTestCase(unittest.TestCase):
     def setUp(self):
         self.auth = HTTPBasicAuth(username, password)
-        self.api = API(self.auth)
+        self.api = API(self.auth, host=host)
         self.api.retry_count = 0
         self.api.retry_delay = 5

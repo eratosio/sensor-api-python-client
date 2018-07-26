@@ -29,9 +29,9 @@ import json
 import datetime
 import enum
 
-from sensetdp.error import SenseTError
-from sensetdp.utils import SenseTEncoder
-from sensetdp.vocabulary import find_unit_of_measurement, find_observed_property
+from senaps_sensor.error import SenapsError
+from senaps_sensor.utils import SenseTEncoder
+from senaps_sensor.vocabulary import find_unit_of_measurement, find_observed_property
 
 
 class StreamResultType(enum.Enum):
@@ -184,7 +184,7 @@ class Platform(Model):
         :return: API weirdly requires a single organisationid on creation/update but returns a list
         """
         if not self.organisations:
-            raise SenseTError("Platform creation requires an organisationid.")
+            raise SenapsError("Platform creation requires an organisationid.")
         pickled["organisationid"] = self.organisations[0].id
         return pickled
 
@@ -363,7 +363,7 @@ class StreamMetaData(Model):
         :return:
         """
         if not self.type:
-            raise SenseTError("Stream creation requires an type.")
+            raise SenapsError("Stream creation requires an type.")
         if self.type is not None:
             pickled["type"] = self._type.value
         return pickled

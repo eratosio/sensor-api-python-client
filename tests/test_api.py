@@ -23,13 +23,12 @@ THE SOFTWARE.
 from __future__ import unicode_literals, absolute_import, print_function
 
 import json
-import uuid
 import datetime
 
-from sensetdp.error import SenseTError
-from sensetdp.models import Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, StreamMetaDataType, \
+from senaps_sensor.error import SenapsError
+from senaps_sensor.models import Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, StreamMetaDataType, \
     InterpolationType, Observation, UnivariateResult
-from sensetdp.utils import SenseTEncoder
+from senaps_sensor.utils import SenseTEncoder
 from tests.config import *
 from pprint import pprint
 
@@ -48,7 +47,7 @@ def dumps(*args, **kwargs):
     return json.dumps(*args, **kwargs)
 
 
-class ApiTestCase(SenseTTestCase):
+class ApiTestCase(SensorApiTestCase):
     existing_platform_id = '05b31a8b-0549-4484-a1b9-a05b89fc677f'
     new_platform_id = 'bdd78502-11bc-4645-9597-0d3231f27212'
     non_existent_stream_id = '0228cefb-8782-4f99-9492-ad3f1febdc12'
@@ -59,10 +58,10 @@ class ApiTestCase(SenseTTestCase):
 
     def generate_platform(self):
         o = Organisation()
-        o.id = "utas"
+        o.id = "sandbox"
 
         g = Group()
-        g.id = "ionata_sandbox"
+        g.id = "group1"
 
         p = Platform()
         p.id = "test_platform_{0}".format(self.new_platform_id)
@@ -99,8 +98,17 @@ class ApiTestCase(SenseTTestCase):
 
         return s, p
 
+    def generate_group(self, id):
+
+        g = Group()
+        g.id = id
+        g.name = 'Unit Test Group'
+
+        return g
+
+
     @tape.use_cassette('test_create_platform.json')
-    # @skip("Permissions issues")
+    @skip
     def test_create_platform(self):
         """
         Platform creation test, no clean up
@@ -134,6 +142,7 @@ class ApiTestCase(SenseTTestCase):
         self.assertEqual(created_platform.name, p.name)
 
     @skip("Permissions issues")
+    @skip
     def test_update_platform(self):
         """
         Platform update test, no clean ups
@@ -151,6 +160,7 @@ class ApiTestCase(SenseTTestCase):
         self.assertEqual(updated_platform.name, created_platform.name)
 
     @skip("Permissions issues")
+    @skip
     def test_delete_platform(self):
         """
         Platform deletion test, create and cleanup
@@ -168,6 +178,7 @@ class ApiTestCase(SenseTTestCase):
         self.assertIsNone(deleted_platform)
 
     @tape.use_cassette('test_verify_init_stream.json')
+    @skip
     def test_verify_init_stream(self):
         # required
         stream = {}
@@ -191,20 +202,24 @@ class ApiTestCase(SenseTTestCase):
         self.assertEqual(actual_json, required_json)
 
     @tape.use_cassette('test_non_existent_stream.json')
+    @skip
     def test_non_existent_stream(self):
         stream_nonexistent_id = "{0}_nonexistent".format(self.non_existent_stream_id)
         # stream_exists_id = "{0}_location".format(self.existing_platform_id)
 
-        with self.assertRaises(SenseTError) as arc:
+        with self.assertRaises(SenapsError) as arc:
             s = self.api.get_stream(id=stream_nonexistent_id)
 
         try:
             s = self.api.get_stream(id=stream_nonexistent_id)
-        except SenseTError as ex:
+        except SenapsError as ex:
             self.assertEqual(ex.api_code, 401)
 
     @tape.use_cassette('test_create_stream.json')
     def test_create_stream(self):
+
+        given_group(self.generate_group('group1'))
+
         s, p = self.generate_stream()
 
         required_state = {
@@ -241,6 +256,7 @@ class ApiTestCase(SenseTTestCase):
         self.assertEqual(actual_json, required_json)
 
     @tape.use_cassette('test_create_observations.json')
+    @skip
     def test_create_observations(self):
         s, p = self.generate_stream()
 

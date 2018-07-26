@@ -32,9 +32,9 @@ import six
 import requests
 import logging
 
-from sensetdp.error import SenseTError, RateLimitError, is_rate_limit_error_message
-from sensetdp.utils import convert_to_utf8_str
-from sensetdp.models import Model
+from senaps_sensor.error import SenapsError, RateLimitError, is_rate_limit_error_message
+from senaps_sensor.utils import convert_to_utf8_str
+from senaps_sensor.models import Model
 
 if six.PY2:
     from urllib import quote
@@ -71,7 +71,7 @@ def bind_api(**config):
             # If authentication is required and no credentials
             # are provided, throw an error.
             if self.require_auth and not api.auth:
-                raise SenseTError('Authentication required!')
+                raise SenapsError('Authentication required!')
 
             self.post_data = kwargs.pop('post_data', None)
             self.json_data = kwargs.pop('json_data', {})
@@ -133,13 +133,13 @@ def bind_api(**config):
                 try:
                     self.session.params[self.allowed_param[idx]] = convert_to_utf8_str(arg)
                 except IndexError:
-                    raise SenseTError('Too many parameters supplied!')
+                    raise SenapsError('Too many parameters supplied!')
 
             for k, arg in kwargs.items():
                 if arg is None:
                     continue
                 if k in self.session.params:
-                    raise SenseTError('Multiple values for parameter %s supplied!' % k)
+                    raise SenapsError('Multiple values for parameter %s supplied!' % k)
                 self.session.params[k] = convert_to_utf8_str(arg)
 
         def build_query_params(self, kwargs):
@@ -147,7 +147,7 @@ def bind_api(**config):
                 try:
                     self.query_params[param] = kwargs.get(param)
                 except KeyError:
-                    raise SenseTError("A required API.bind() method query_param was missing from the kwargs.")
+                    raise SenapsError("A required API.bind() method query_param was missing from the kwargs.")
 
         def build_path(self):
             for variable in re_path_template.findall(self.path):
@@ -160,7 +160,7 @@ def bind_api(**config):
                     try:
                         value = quote(self.session.params[name])
                     except KeyError:
-                        raise SenseTError('No parameter value found for path variable: %s' % name)
+                        raise SenapsError('No parameter value found for path variable: %s' % name)
                     del self.session.params[name]
 
                 self.path = self.path.replace(variable, value)
@@ -242,7 +242,7 @@ def bind_api(**config):
                                                     auth=auth,
                                                     proxies=self.api.proxy)
                 except Exception as e:
-                    raise SenseTError('Failed to send request: %s' % e)
+                    raise SenapsError('Failed to send request: %s' % e)
                 rem_calls = resp.headers.get('x-rate-limit-remaining')
                 if rem_calls is not None:
                     self._remaining_calls = int(rem_calls)
@@ -285,7 +285,7 @@ def bind_api(**config):
                 if is_rate_limit_error_message(error_msg):
                     raise RateLimitError(error_msg, resp)
                 else:
-                    raise SenseTError(error_msg, resp, api_code=api_error_code)
+                    raise SenapsError(error_msg, resp, api_code=api_error_code)
 
             # Parse the response payload
             result = self.parser.parse(self, resp.text)
