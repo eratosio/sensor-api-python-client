@@ -39,6 +39,7 @@ else:
 username = os.environ.get('SENAPS_USERNAME', 'username')
 password = os.environ.get('SENAPS_PASSWORD', 'password')
 host = os.environ.get('API_BASE', 'sensor-cloud.io')
+ssl_verify = bool(strtobool(os.environ.get('SSL_VERIFY', True)))
 use_replay = bool(strtobool(os.environ.get('USE_REPLAY', "0")))
 
 
@@ -53,6 +54,6 @@ tape = vcr.VCR(
 class SensorApiTestCase(unittest.TestCase):
     def setUp(self):
         self.auth = HTTPBasicAuth(username, password)
-        self.api = API(self.auth, host=host)
+        self.api = API(self.auth, host=host, verify=ssl_verify)
         self.api.retry_count = 0
         self.api.retry_delay = 5

@@ -37,11 +37,13 @@ from senaps_sensor.vocabulary import find_unit_of_measurement, find_observed_pro
 class StreamResultType(enum.Enum):
     scalar = "scalarvalue"
     geolocation = "geolocationvalue"
+    vector = "vectorvalue"
 
 
 class StreamMetaDataType(enum.Enum):
     scalar = ".ScalarStreamMetaData"
     geolocation = ".GeoLocationStreamMetaData"
+    vector = ".VectorStreamMetaData"
 
 
 class InterpolationType(enum.Enum):
