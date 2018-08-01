@@ -44,6 +44,7 @@ class StreamMetaDataType(enum.Enum):
     scalar = ".ScalarStreamMetaData"
     geolocation = ".GeoLocationStreamMetaData"
     vector = ".VectorStreamMetaData"
+    regularly_binned_vector = ".RegularlyBinnedVectorStreamMetaData"
 
 
 class InterpolationType(enum.Enum):
@@ -302,6 +303,15 @@ class StreamMetaData(Model):
         # geo only attrs
         self._unit_of_measure = None
 
+        # simple vector only attrs
+        self._length = None
+        # regularly binned vector only attrs
+        self._start = None
+        self._end = None
+        self._step = None
+        self._amplitude_unit = None
+        self._length_unit = None
+
         # cumulative stream only attrs
         self.accumulationInterval = None
         self.accumulationAnchor = None
@@ -321,8 +331,14 @@ class StreamMetaData(Model):
         if self.unit_of_measure:
             pickled["unitOfMeasure"] = self.unit_of_measure
 
+        if self.amplitude_unit:
+            pickled["amplitudeUnit"] = self.amplitude_unit
+
+        if self.length_unit:
+            pickled["lengthUnit"] = self.length_unit
+
         # clean up non scalar StreamMetaData keys
-        if self._type != StreamMetaDataType.scalar:
+        if self._type != StreamMetaDataType.scalar and self._type != StreamMetaDataType.regularly_binned_vector:
             for key in ['observedProperty', 'cumulative']:
                 try:
                     del pickled[key]
@@ -368,6 +384,17 @@ class StreamMetaData(Model):
             raise SenapsError("Stream creation requires an type.")
         if self.type is not None:
             pickled["type"] = self._type.value
+        if self.length is not None:
+            pickled["length"] = self._length
+
+        if self.start is not None:
+            pickled["start"] = self._start
+
+        if self.end is not None:
+            pickled["end"] = self._end
+
+        if self.step is not None:
+            pickled["step"] = self._step
         return pickled
 
     @classmethod
@@ -390,6 +417,14 @@ class StreamMetaData(Model):
                         ev = ev[0].get('_links', {}).get('self', {}).get('href', )
                         # Remove local vocab checks for now
                         setattr(stream_meta_data, "unit_of_measure", ev)
+                    elif ek == "amplitudeUnit":
+                        ev = ev[0].get('_links', {}).get('self', {}).get('href', )
+                        # Remove local vocab checks for now
+                        setattr(stream_meta_data, "amplitude_unit", ev)
+                    elif ek == "lengthUnit":
+                        ev = ev[0].get('_links', {}).get('self', {}).get('href', )
+                        # Remove local vocab checks for now
+                        setattr(stream_meta_data, "length_unit", ev)
                     else:
                         setattr(stream_meta_data, ek, ev)
                         print("parse: %s, %s" % (ek,ev))
@@ -429,6 +464,54 @@ class StreamMetaData(Model):
     def unit_of_measure(self, value):
         self._unit_of_measure = value
 
+    # vector properties
+    @property
+    def length(self):
+        return self._length
+
+    @length.setter
+    def length(self, value):
+        self._length = value
+
+    @property
+    def start(self):
+        return self._start
+
+    @start.setter
+    def start(self, value):
+        self._start = value
+
+    @property
+    def end(self):
+        return self._end
+
+    @end.setter
+    def end(self, value):
+        self._end = value
+
+    @property
+    def step(self):
+        return self._step
+
+    @step.setter
+    def step(self, value):
+        self._step = value
+
+    @property
+    def amplitude_unit(self):
+        return self._amplitude_unit
+
+    @amplitude_unit.setter
+    def amplitude_unit(self, value):
+        self._amplitude_unit = value
+
+    @property
+    def length_unit(self):
+        return self._length_unit
+
+    @length_unit.setter
+    def length_unit(self, value):
+        self._length_unit = value
 
 class Stream(Model):
     def __init__(self, api=None):
