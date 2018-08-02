@@ -216,6 +216,8 @@ class Platform(Model):
     def parse_list(cls, api, json_list):
         if isinstance(json_list, list):
             item_list = json_list
+        elif "_embedded" not in json_list:
+            item_list = []
         else:
             item_list = json_list['_embedded']['platforms']
 
