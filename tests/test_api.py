@@ -94,6 +94,13 @@ class ApiTestCase(SensorApiTestCase):
         s, p = self._generate_stream(StreamResultType.vector, sm, stream_id)
         return s, p
 
+    def generate_image_stream(self, stream_id=None):
+        sm = StreamMetaData()
+        sm.type = StreamMetaDataType.image
+
+        s, p = self._generate_stream(StreamResultType.image, sm, stream_id)
+        return s, p
+
     def generate_regularly_binned_vector_stream(self, start, end, step, stream_id=None):
         sm = StreamMetaData()
         sm.type = StreamMetaDataType.regularly_binned_vector
@@ -101,8 +108,8 @@ class ApiTestCase(SensorApiTestCase):
         sm.end = end
         sm.step = step
 
-        sm.observed_property = "http://registry.it.csiro.au/def/environment/property/absorption_total",
-        sm.amplitude_unit = "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Percent",
+        sm.observed_property = "http://registry.it.csiro.au/def/environment/property/absorption_total"
+        sm.amplitude_unit = "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Percent"
         sm.length_unit = "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Angstrom"
 
         s, p = self._generate_stream(StreamResultType.vector, sm, stream_id)
@@ -361,6 +368,7 @@ class ApiTestCase(SensorApiTestCase):
         # verify json
         self.assertEqual(actual_json, required_json)
 
+
     @tape.use_cassette('test_create_regularly_binned_vector_stream.json')
     def test_create_regularly_binned_vector_stream(self):
         s, p = self.generate_regularly_binned_vector_stream(10, 20, 2, "ba94aada-84d0-420c-87d9-5510a17c176d")
@@ -379,8 +387,8 @@ class ApiTestCase(SensorApiTestCase):
                 "start": 10,
                 "end": 20,
                 "step": 2,
-                "observedProperty": ["http://registry.it.csiro.au/def/environment/property/absorption_total"],
-                "amplitudeUnit": ["http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Percent"],
+                "observedProperty": "http://registry.it.csiro.au/def/environment/property/absorption_total",
+                "amplitudeUnit": "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Percent",
                 "lengthUnit": "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Angstrom"
             }
         }
@@ -403,9 +411,46 @@ class ApiTestCase(SensorApiTestCase):
         # verify json
         self.assertEqual(actual_json, required_json)
 
+    @tape.use_cassette('test_create_image_stream.json')
+    def test_create_image_stream(self):
+        s, p = self.generate_image_stream("403e2a68-7e4c-43e3-93d4-71d8980014fa")
+
+        required_state = {
+            "id": s.id,
+            "resulttype": "imagevalue",
+            "organisationid": p.organisations[0].id,
+            "groupids": [
+                p.groups[0].id
+            ],
+            "samplePeriod": "PT10S",
+            "reportingPeriod": 'P1D',
+            "streamMetadata": {
+                "type": ".ImageStreamMetaData",
+            }
+        }
+        required_json = dumps(required_state, sort_keys=True)  # be explict with key order since dumps gives us a string
+
+        actual_state = s.to_state("create")
+        actual_json = s.to_json("create")
+
+        # dict diff
+        # from deepdiff import DeepDiff
+        # diff = DeepDiff(required_state, actual_state)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        created_stream = self.api.create_stream(s)
+
+        self.assertEqual(s.id, created_stream.id)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+
     @tape.use_cassette('test_create_geolocation_observations.json')
     def test_create_geolocation_observations(self):
-        s, p = self._generate_stream()
+        s, p = self.generate_geolocation_stream()
 
         o = Observation()
 
@@ -609,7 +654,7 @@ class ApiTestCase(SensorApiTestCase):
 
         points = [1, 2, 3]
 
-        s, p = self.generate_regularly_binned_vector_stream(1, 100, 10, "a8a8ce25-30f6-4b1a-ac78-533d2887280f")
+        s, p = self.generate_regularly_binned_vector_stream(1, 3, 1, "a8a8ce25-30f6-4b1a-ac78-533d2887280f")
 
         item = UnivariateResult()
         item.t = dt
@@ -645,5 +690,81 @@ class ApiTestCase(SensorApiTestCase):
 
         created_observation = self.api.create_observations(o, streamid=s.id)
 
+        self.assertEqual(created_observation.get('message'), "Observations uploaded")
+        self.assertEqual(created_observation.get('status'), 201)
+
+
+    @tape.use_cassette('test_create_image_observations.json')
+    def test_create_image_observations(self):
+        s, p = self.generate_image_stream("13136661-8c66-47c6-9cd1-b74e4214a4ab")
+
+        o = Observation()
+
+        dt = datetime.datetime(2016, 2, 15, 0, 0, 0)
+        dt_td = datetime.timedelta(minutes=15)
+
+        points = [
+            {'time': dt + (dt_td * 0), 'm': 'image/png', 'd': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='},
+            {'time': dt + (dt_td * 1), 'm': 'image/png', 'd': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='},
+            {'time': dt + (dt_td * 2), 'm': 'image/png', 'd': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='}
+        ]
+
+        for p in points:
+            item = UnivariateResult()
+            item.t = p.get('time')
+            item.v = {
+                'm': p.get('m'),
+                'd': p.get('d')
+            }
+            o.results.append(item)
+
+        dt_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+        required_state = {
+            'results': [
+                {
+                    't':  points[0].get('time').strftime(dt_format),
+                    'v': {
+                        'm': points[0].get('m'),
+                        'd': points[0].get('d')
+                    }
+                },
+                {
+                    't':  points[1].get('time').strftime(dt_format),
+                    'v': {
+                        'm': points[1].get('m'),
+                        'd': points[1].get('d')
+                    }
+                },
+                {
+                    't':  points[2].get('time').strftime(dt_format),
+                    'v': {
+                        'm': points[2].get('m'),
+                        'd': points[2].get('d')
+                    }
+                },
+            ]
+        }
+        required_json = dumps(required_state, sort_keys=True)  # be explict with key order since dumps gives us a string
+
+        actual_state = o.to_state("create")
+        actual_json = o.to_json("create")
+
+        ### dict diff debugging
+        # from deepdiff import DeepDiff
+        # diff = DeepDiff(required_state, actual_state)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        print("creating stream %s" % s.id)
+        created_stream = self.api.create_stream(s)
+        print("done creating stream %s")
+
+        self.assertEqual(created_stream.id, s.id)
+
+        print("creating observations %s" % s.id)
+        created_observation = self.api.create_observations(o, streamid=s.id)
+
+        print("done creating observations %s" % s.id)
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)

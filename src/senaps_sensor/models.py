@@ -38,6 +38,7 @@ class StreamResultType(enum.Enum):
     scalar = "scalarvalue"
     geolocation = "geolocationvalue"
     vector = "vectorvalue"
+    image = "imagevalue"
 
 
 class StreamMetaDataType(enum.Enum):
@@ -45,6 +46,7 @@ class StreamMetaDataType(enum.Enum):
     geolocation = ".GeoLocationStreamMetaData"
     vector = ".VectorStreamMetaData"
     regularly_binned_vector = ".RegularlyBinnedVectorStreamMetaData"
+    image = ".ImageStreamMetaData"
 
 
 class InterpolationType(enum.Enum):
