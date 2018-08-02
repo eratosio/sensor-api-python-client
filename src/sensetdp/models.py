@@ -544,6 +544,18 @@ class Group(Model):
             setattr(group, k, v)
         return group
 
+    @classmethod
+    def parse_list(cls, api, json_list):
+        if isinstance(json_list, list):
+            item_list = json_list
+        else:
+            item_list = json_list['_embedded']['groups']
+
+        results = ResultSet()
+        for obj in item_list:
+            results.append(cls.parse(api, obj))
+        return results
+
 
 # TODO - not all attributes are implemented
 class Location(Model):

@@ -404,7 +404,8 @@ class API(object):
             api=self,
             path='/groups',
             method='GET',
-            payload_type='json',
+            payload_type='group',
+            payload_list=True,
             allowed_param=[
             ],
             query_only_param=[
