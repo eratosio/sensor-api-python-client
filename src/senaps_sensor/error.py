@@ -27,8 +27,8 @@ from __future__ import print_function
 import six
 
 
-class SenseTError(Exception):
-    """SenseT exception"""
+class SenapsError(Exception):
+    """Senaps exception"""
 
     def __init__(self, reason, response=None, api_code=None):
         self.reason = six.text_type(reason)
@@ -48,8 +48,8 @@ def is_rate_limit_error_message(message):
            and message[0]['code'] == 88
 
 
-class RateLimitError(SenseTError):
-    """Exception for SenseT hitting the rate limit."""
+class RateLimitError(SenapsError):
+    """Exception for Senaps hitting the rate limit."""
     # RateLimitError has the exact same properties and inner workings
     # as SenseTError for backwards compatibility reasons.
     pass

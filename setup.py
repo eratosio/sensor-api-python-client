@@ -10,7 +10,7 @@ except ImportError: # for pip <= 9.0.3
 
 src_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "src")
 
-VERSION_FILE = os.path.join(src_path, "sensetdp", "__init__.py")
+VERSION_FILE = os.path.join(src_path, "senaps_sensor", "__init__.py")
 ver_file = open(VERSION_FILE, "rt").read()
 VERSION_RE = r"^__version__ = ['\"]([^'\"]*)['\"]"
 mo = re.search(VERSION_RE, ver_file, re.M)
@@ -23,22 +23,22 @@ else:
 install_reqs = parse_requirements('requirements.txt', session=uuid.uuid1())
 reqs = [str(req.req) for req in install_reqs]
 
-AUTHOR = "Ionata Digital"
-AUTHOR_EMAIL = "developers@ionata.com.au"
+AUTHOR = "CSIRO Data61"
+AUTHOR_EMAIL = "senaps@csiro.au"
 
-setup(name="sensetdp",
+setup(name="senaps_sensor",
       version=version,
-      description="Sense-T Data Portal v2 client",
+      description="Senaps Sensor Data API Client",
       license="MIT",
       author=AUTHOR,
       author_email=AUTHOR_EMAIL,
       maintainer=AUTHOR,
       maintainer_email=AUTHOR_EMAIL,
-      url="https://github.com/ionata/senset-data-portal",
+      url="https://bitbucket.csiro.au/projects/SC/repos/sensor-api-python-client/browse",
       packages=find_packages(where='src', exclude=['tests']),
       package_dir={'': 'src'},
       install_requires=reqs,
-      keywords="sense-t api client library",
+      keywords="senaps sensor api client library",
       classifiers=[
           'Development Status :: 4 - Beta',
           'Topic :: Software Development :: Libraries',
