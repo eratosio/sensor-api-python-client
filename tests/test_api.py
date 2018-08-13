@@ -23,6 +23,9 @@ THE SOFTWARE.
 from __future__ import unicode_literals, absolute_import, print_function
 
 import json
+import time
+import traceback
+import sys
 import datetime
 
 from senaps_sensor.error import SenapsError
@@ -768,3 +771,27 @@ class ApiTestCase(SensorApiTestCase):
         print("done creating observations %s" % s.id)
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)
+
+    @tape.use_cassette('test_create_image_observations.json')
+    def test_connection_timeout(self):
+
+        # Override connect timeout to speed this test up a bit
+        connect_timeout = 1
+        self.api.timeout = (connect_timeout, 3)
+
+        # Set to an invalid IP to force a connect timeout
+        self.api.host = '1.2.3.4'
+
+        # Calculate expected time to fail
+        expected_time = connect_timeout * (self.api.connect_retries+1)
+
+        t0 = time.time()
+
+        with self.assertRaises(SenapsError):
+            self.api.streams()
+
+        t = time.time() - t0
+        print('Connect timeout took', t, 'seconds')
+        self.assertTrue((expected_time - 0.5) <= t <= (expected_time + 0.5), 'Timeout took %f, expected, %f' % (t, expected_time))
+
+

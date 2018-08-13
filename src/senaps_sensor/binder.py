@@ -32,6 +32,9 @@ import six
 import requests
 import logging
 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
 from senaps_sensor.error import SenapsError, RateLimitError, is_rate_limit_error_message
 from senaps_sensor.utils import convert_to_utf8_str
 from senaps_sensor.models import Model
@@ -91,6 +94,10 @@ def bind_api(**config):
             self.parser = kwargs.pop('parser', api.parser)
             self.session.headers = kwargs.pop('headers', {})
 
+            self.session = self.requests_retry_session(kwargs.pop('connect_retries', api.connect_retries),
+                                                       kwargs.pop('read_retries', api.read_retries),
+                                                       session=self.session)
+
             self.build_data(args, kwargs)
             self.build_query_params(kwargs)
 
@@ -109,6 +116,23 @@ def bind_api(**config):
             # Monitoring rate limits
             self._remaining_calls = None
             self._reset_time = None
+
+        def requests_retry_session(self, connect_retries=5, read_retries=5, backoff_factor=0, status_forcelist=(500,502,504), session=None):
+
+            session = session or requests.Session()
+            retry = Retry(
+                        total=None,
+                        read=read_retries,
+                        connect=connect_retries,
+                        backoff_factor=backoff_factor,
+                        status_forcelist=status_forcelist,
+                    )
+
+            adapter = HTTPAdapter(max_retries=retry)
+            session.mount('http://', adapter)
+            session.mount('https://', adapter)
+            return session
+
 
         def build_data(self, args, kwargs):
             if len(args) == 1 and isinstance(args[0], Model):

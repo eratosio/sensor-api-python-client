@@ -34,7 +34,7 @@ class API(object):
     def __init__(self, auth_handler=None,
                  host='data.sense-t.org.au', cache=None, api_root='/api/sensor/v2',
                  retry_count=0, retry_delay=0, retry_errors=None, timeout=60, parser=None,
-                 compression=False, wait_on_rate_limit=False,
+                 compression=False, wait_on_rate_limit=False, connect_retries=3, read_retries=3,
                  wait_on_rate_limit_notify=False, proxy='', verify=True):
         """ Api instance Constructor
 
@@ -63,6 +63,8 @@ class API(object):
         self.retry_count = retry_count
         self.retry_delay = retry_delay
         self.retry_errors = retry_errors
+        self.connect_retries = connect_retries
+        self.read_retries = read_retries
         self.timeout = timeout
         self.wait_on_rate_limit = wait_on_rate_limit
         self.wait_on_rate_limit_notify = wait_on_rate_limit_notify

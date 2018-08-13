@@ -39,7 +39,7 @@ else:
 username = os.environ.get('SENAPS_USERNAME', 'username')
 password = os.environ.get('SENAPS_PASSWORD', 'password')
 host = os.environ.get('API_BASE', 'sensor-cloud.io')
-ssl_verify = bool(strtobool(os.environ.get('SSL_VERIFY', True)))
+ssl_verify = bool(strtobool(os.environ.get('SSL_VERIFY', "True")))
 use_replay = bool(strtobool(os.environ.get('USE_REPLAY', "0")))
 
 
