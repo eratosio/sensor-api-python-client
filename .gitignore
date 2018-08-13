@@ -16,3 +16,6 @@ venv36/
 # IDEA Specific
 .idea/*
 *.iml
+
+# macOS
+.DS_Store

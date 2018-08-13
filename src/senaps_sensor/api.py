@@ -100,13 +100,21 @@ class API(object):
 
     @property
     def platforms(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/put_platforms_id
+        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/platforms
+            :allowed_param: 'id', 'name', 'organisationid', 'groupids', 'streamids'
         """
         return bind_api(
             api=self,
             path='/platforms',
             payload_type='platform',
             payload_list=True,
+            query_only_param = [
+                "id",
+                "name",
+                "organisationid",
+                "groupids",
+                "streamids"
+            ],
             require_auth=True,
         )
 
@@ -396,7 +404,8 @@ class API(object):
             api=self,
             path='/groups',
             method='GET',
-            payload_type='json',
+            payload_type='group',
+            payload_list=True,
             allowed_param=[
             ],
             query_only_param=[
