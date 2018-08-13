@@ -6,12 +6,10 @@ dist/
 *.pyo
 *.egg-info
 
-venv/*
+.tox/
+venv/
 venv35/
 venv36/
-
-.tox/
-
 
 # IDEA Specific
 .idea/*
@@ -19,3 +17,4 @@ venv36/
 
 # macOS
 .DS_Store
+

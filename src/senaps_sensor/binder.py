@@ -32,6 +32,9 @@ import six
 import requests
 import logging
 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
 from senaps_sensor.error import SenapsError, RateLimitError, is_rate_limit_error_message
 from senaps_sensor.utils import convert_to_utf8_str
 from senaps_sensor.models import Model
@@ -41,14 +44,12 @@ if six.PY2:
 else:
     from urllib.parse import quote
 
-
 re_path_template = re.compile('{\w+}')
 
 log = logging.getLogger('senset.binder')
 
 
 def bind_api(**config):
-
     class APIMethod(object):
 
         api = config['api']
@@ -91,6 +92,12 @@ def bind_api(**config):
             self.parser = kwargs.pop('parser', api.parser)
             self.session.headers = kwargs.pop('headers', {})
 
+            self.session = self.requests_retry_session(kwargs.pop('connect_retries', api.connect_retries),
+                                                       kwargs.pop('read_retries', api.read_retries),
+                                                       kwargs.pop('backoff_factor', api.backoff_factor),
+                                                       kwargs.pop('status_retries', api.status_retries),
+                                                       session=self.session)
+
             self.build_data(args, kwargs)
             self.build_query_params(kwargs)
 
@@ -109,6 +116,24 @@ def bind_api(**config):
             # Monitoring rate limits
             self._remaining_calls = None
             self._reset_time = None
+
+        def requests_retry_session(self, connect_retries, read_retries, backoff_factor, status_retries,
+                                   status_forcelist=(500, 502, 504), session=None):
+
+            session = session or requests.Session()
+            retry = Retry(
+                total=None,
+                read=read_retries,
+                connect=connect_retries,
+                status=status_retries,
+                backoff_factor=backoff_factor,
+                status_forcelist=status_forcelist,
+            )
+
+            adapter = HTTPAdapter(max_retries=retry)
+            session.mount('http://', adapter)
+            session.mount('https://', adapter)
+            return session
 
         def build_data(self, args, kwargs):
             if len(args) == 1 and isinstance(args[0], Model):
@@ -165,7 +190,7 @@ def bind_api(**config):
 
                 self.path = self.path.replace(variable, value)
 
-            log.info("PATH: %r", self.path)
+            log.debug("PATH: %r", self.path)
 
         def execute(self):
             self.api.cached_result = False
@@ -253,7 +278,7 @@ def bind_api(**config):
                     self._reset_time = int(reset_time)
                 if self.wait_on_rate_limit and self._remaining_calls == 0 and (
                         # if ran out of calls before waiting switching retry last call
-                                resp.status_code == 429 or resp.status_code == 420):
+                        resp.status_code == 429 or resp.status_code == 420):
                     continue
                 retry_delay = self.retry_delay
                 # Exit request loop if non-retry error code
@@ -270,8 +295,7 @@ def bind_api(**config):
                 # Sleep before retrying request again
                 if retries_performed < self.retry_count + 1:  # Only sleep when not on the last retry
                     time.sleep(retry_delay)
-            
-            
+
             # If an error was returned, throw an exception
             self.api.last_response = resp
             if resp.status_code and not 200 <= resp.status_code < 300:
