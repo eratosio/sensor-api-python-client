@@ -96,6 +96,7 @@ def bind_api(**config):
 
             self.session = self.requests_retry_session(kwargs.pop('connect_retries', api.connect_retries),
                                                        kwargs.pop('read_retries', api.read_retries),
+                                                       kwargs.pop('backoff_factor', api.backoff_factor),
                                                        session=self.session)
 
             self.build_data(args, kwargs)
@@ -117,7 +118,7 @@ def bind_api(**config):
             self._remaining_calls = None
             self._reset_time = None
 
-        def requests_retry_session(self, connect_retries=5, read_retries=5, backoff_factor=0, status_forcelist=(500,502,504), session=None):
+        def requests_retry_session(self, connect_retries, read_retries, backoff_factor, status_forcelist=(500,502,504), session=None):
 
             session = session or requests.Session()
             retry = Retry(

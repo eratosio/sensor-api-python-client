@@ -778,6 +778,7 @@ class ApiTestCase(SensorApiTestCase):
         # Override connect timeout to speed this test up a bit
         connect_timeout = 1
         self.api.timeout = (connect_timeout, 3)
+        self.api.backoff_factor = 0
 
         # Set to an invalid IP to force a connect timeout
         self.api.host = '1.2.3.4'
@@ -793,5 +794,28 @@ class ApiTestCase(SensorApiTestCase):
         t = time.time() - t0
         print('Connect timeout took', t, 'seconds')
         self.assertTrue((expected_time - 0.5) <= t <= (expected_time + 0.5), 'Timeout took %f, expected, %f' % (t, expected_time))
+
+    @tape.use_cassette('test_create_image_observations.json')
+    def test_connection_refused(self):
+
+        # Set to localhost and closed port to force a connect refused
+        self.api.host = 'localhost:700' # hopefully a closed port
+
+        # slow down the backoff, set connect retries
+        self.api.backoff_factor = 2
+        self.api.connect_retries = 3
+
+        # Calculate expected time to fail
+        expected_time = 12 # 0s, 4s, 8s = 12s total
+
+        t0 = time.time()
+
+        with self.assertRaises(SenapsError):
+            self.api.streams()
+
+        t = time.time() - t0
+        print('Connect timeout took', t, 'seconds')
+        self.assertTrue((expected_time - 0.5) <= t <= (expected_time + 0.5),
+                        'Timeout took %f, expected, %f' % (t, expected_time))
 
 

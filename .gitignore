@@ -6,7 +6,10 @@ dist/
 *.pyo
 *.egg-info
 
+venv
 venv/*
+venv35
+venv36
 venv35/*
 venv36/*
 

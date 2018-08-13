@@ -35,6 +35,7 @@ class API(object):
                  host='data.sense-t.org.au', cache=None, api_root='/api/sensor/v2',
                  retry_count=0, retry_delay=0, retry_errors=None, timeout=60, parser=None,
                  compression=False, wait_on_rate_limit=False, connect_retries=3, read_retries=3,
+                 backoff_factor=0.5,
                  wait_on_rate_limit_notify=False, proxy='', verify=True):
         """ Api instance Constructor
 
@@ -65,6 +66,7 @@ class API(object):
         self.retry_errors = retry_errors
         self.connect_retries = connect_retries
         self.read_retries = read_retries
+        self.backoff_factor = backoff_factor
         self.timeout = timeout
         self.wait_on_rate_limit = wait_on_rate_limit
         self.wait_on_rate_limit_notify = wait_on_rate_limit_notify
