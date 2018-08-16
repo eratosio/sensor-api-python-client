@@ -23,12 +23,17 @@ THE SOFTWARE.
 from __future__ import unicode_literals, absolute_import, print_function
 
 import json
+import time
+import traceback
+import sys
 import datetime
 
 from senaps_sensor.error import SenapsError
 from senaps_sensor.models import Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, StreamMetaDataType, \
     InterpolationType, Observation, UnivariateResult
 from senaps_sensor.utils import SenseTEncoder
+from senaps_sensor.binder import bind_api
+
 from tests.config import *
 from pprint import pprint
 
@@ -768,3 +773,96 @@ class ApiTestCase(SensorApiTestCase):
         print("done creating observations %s" % s.id)
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)
+
+    @tape.use_cassette('test_connection_timeout.json')
+    def test_connection_timeout(self):
+
+        # Override connect timeout to speed this test up a bit
+        connect_timeout = 1
+        self.api.timeout = (connect_timeout, 3)
+        self.api.backoff_factor = 0
+
+        # Set to an invalid IP to force a connect timeout
+        self.api.host = '1.2.3.4'
+
+        # Calculate expected time to fail
+        expected_time = connect_timeout * (self.api.connect_retries+1)
+
+        t0 = time.time()
+
+        with self.assertRaises(SenapsError):
+            self.api.streams()
+
+        t = time.time() - t0
+        print('Connect timeout took', t, 'seconds')
+        self.assertTrue((expected_time - 0.5) <= t <= (expected_time + 0.5), 'Timeout took %f, expected, %f' % (t, expected_time))
+
+    @tape.use_cassette('test_connection_refused.json')
+    def test_connection_refused(self):
+
+        # Set to localhost and closed port to force a connect refused
+        self.api.host = 'localhost:700' # hopefully a closed port
+
+        # slow down the backoff, set connect retries
+        self.api.backoff_factor = 2
+        self.api.connect_retries = 3
+
+        # Calculate expected time to fail
+        expected_time = 12 # 0s, 4s, 8s = 12s total
+
+        t0 = time.time()
+
+        with self.assertRaises(SenapsError):
+            self.api.streams()
+
+        t = time.time() - t0
+        print('Connect timeout took', t, 'seconds')
+        self.assertTrue((expected_time - 0.5) <= t <= (expected_time + 0.5),
+                        'Timeout took %f, expected, %f' % (t, expected_time))
+
+    @tape.use_cassette('test_bad_gateway.json')
+    def test_bad_gateway(self):
+
+        # Set to localhost and closed port to force a connect refused
+        self.api.host = 'httpstat.us'  # hopefully a closed port
+        self.api.api_root = '/'
+
+        # slow down the backoff, set connect retries
+        self.api.backoff_factor = 2
+        self.api.status_retries = 3
+
+        # Calculate expected time to fail
+        expected_time = 16
+
+        t0 = time.time()
+
+        with self.assertRaises(SenapsError):
+            self.r = bind_api(
+                api=self.api,
+                path='/502', #point us to the httpstat.us test endpoint
+                payload_type='json',
+                allowed_param=['limit', 'id'],
+                query_only_param=[
+                    'id',
+                    'limit',
+                    'skip',
+                    'near',
+                    'radius',
+                    'resulttype',
+                    'expand',
+                    'recursive',
+                    'groupids',
+                    'organisationid',
+                    'locationid',
+                    'usermetadatafield',
+                    'usermetadatavalues'
+                ],
+                payload_list=True,
+                require_auth=True,
+            )()
+
+        t = time.time() - t0
+        print('Connect timeout took', t, 'seconds')
+        self.assertTrue((expected_time - 1) <= t <= (expected_time + 1),
+                        'Timeout took %f, expected, %f' % (t, expected_time))
+

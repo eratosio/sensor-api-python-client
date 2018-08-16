@@ -6,8 +6,15 @@ dist/
 *.pyo
 *.egg-info
 
-venv/*
+.tox/
+venv/
+venv35/
+venv36/
 
 # IDEA Specific
 .idea/*
 *.iml
+
+# macOS
+.DS_Store
+

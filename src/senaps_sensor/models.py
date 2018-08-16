@@ -221,6 +221,8 @@ class Platform(Model):
     def parse_list(cls, api, json_list):
         if isinstance(json_list, list):
             item_list = json_list
+        elif "_embedded" not in json_list:
+            item_list = []
         else:
             item_list = json_list['_embedded']['platforms']
 
@@ -628,6 +630,18 @@ class Group(Model):
         for k, v in json.items():
             setattr(group, k, v)
         return group
+
+    @classmethod
+    def parse_list(cls, api, json_list):
+        if isinstance(json_list, list):
+            item_list = json_list
+        else:
+            item_list = json_list['_embedded']['groups']
+
+        results = ResultSet()
+        for obj in item_list:
+            results.append(cls.parse(api, obj))
+        return results
 
 
 # TODO - not all attributes are implemented

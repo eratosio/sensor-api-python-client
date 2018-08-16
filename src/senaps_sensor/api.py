@@ -34,7 +34,8 @@ class API(object):
     def __init__(self, auth_handler=None,
                  host='data.sense-t.org.au', cache=None, api_root='/api/sensor/v2',
                  retry_count=0, retry_delay=0, retry_errors=None, timeout=60, parser=None,
-                 compression=False, wait_on_rate_limit=False,
+                 compression=False, wait_on_rate_limit=False, connect_retries=3, read_retries=3,
+                 backoff_factor=0.5, status_retries=3,
                  wait_on_rate_limit_notify=False, proxy='', verify=True):
         """ Api instance Constructor
 
@@ -63,6 +64,10 @@ class API(object):
         self.retry_count = retry_count
         self.retry_delay = retry_delay
         self.retry_errors = retry_errors
+        self.connect_retries = connect_retries
+        self.read_retries = read_retries
+        self.status_retries = status_retries
+        self.backoff_factor = backoff_factor
         self.timeout = timeout
         self.wait_on_rate_limit = wait_on_rate_limit
         self.wait_on_rate_limit_notify = wait_on_rate_limit_notify
@@ -100,13 +105,21 @@ class API(object):
 
     @property
     def platforms(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/put_platforms_id
+        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/platforms
+            :allowed_param: 'id', 'name', 'organisationid', 'groupids', 'streamids'
         """
         return bind_api(
             api=self,
             path='/platforms',
             payload_type='platform',
             payload_list=True,
+            query_only_param = [
+                "id",
+                "name",
+                "organisationid",
+                "groupids",
+                "streamids"
+            ],
             require_auth=True,
         )
 
@@ -396,7 +409,8 @@ class API(object):
             api=self,
             path='/groups',
             method='GET',
-            payload_type='json',
+            payload_type='group',
+            payload_list=True,
             allowed_param=[
             ],
             query_only_param=[
