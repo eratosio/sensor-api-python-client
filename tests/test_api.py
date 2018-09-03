@@ -55,10 +55,6 @@ def dumps(*args, **kwargs):
 
 
 class ApiTestCase(SensorApiTestCase):
-    existing_platform_id = '05b31a8b-0549-4484-a1b9-a05b89fc677f'
-    new_platform_id = 'bdd78502-11bc-4645-9597-0d3231f27212'
-    non_existent_stream_id = '0228cefb-8782-4f99-9492-ad3f1febdc12'
-    new_stream_id = '21cdbef1f3da-2949-99f4-2878-bfec8220'
 
     def setUp(self):
         super(ApiTestCase, self).setUp()
