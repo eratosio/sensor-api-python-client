@@ -211,7 +211,7 @@ class Platform(Model):
                         setattr(platform, "organisations", Organisation.parse_list(api, ev))
                     elif ek == "groups":
                         setattr(platform, "groups", Group.parse_list(api, ev))
-                    elif ek == "deployments":
+                    elif ek == "platformdeployment":
                         setattr(platform, "deployments", Deployment.parse_list(api, ev))
             else:
                 setattr(platform, k, v)
@@ -342,7 +342,7 @@ class StreamMetaData(Model):
             pickled["lengthUnit"] = self.length_unit
 
         # clean up non scalar StreamMetaData keys
-        if self._type != StreamMetaDataType.scalar and self._type != StreamMetaDataType.regularly_binned_vector:
+        if self._type != StreamMetaDataType.scalar.value and self._type != StreamMetaDataType.regularly_binned_vector.value:
             for key in ['observedProperty', 'cumulative']:
                 try:
                     del pickled[key]
@@ -350,7 +350,7 @@ class StreamMetaData(Model):
                     pass
 
         # clean up non geo StreamMetaData keys
-        if self._type != StreamMetaDataType.scalar:
+        if self._type != StreamMetaDataType.scalar.value:
             for key in ['unitOfMeasure']:
                 try:
                     del pickled[key]
@@ -387,7 +387,7 @@ class StreamMetaData(Model):
         if not self.type:
             raise SenapsError("Stream creation requires an type.")
         if self.type is not None:
-            pickled["type"] = self._type.value
+            pickled["type"] = self._type
         if self.length is not None:
             pickled["length"] = self._length
 
@@ -646,6 +646,12 @@ class Group(Model):
 
 # TODO - not all attributes are implemented
 class Location(Model):
+
+    def __init__(self, api=None):
+        super(Location, self).__init__(api=api)
+        self._organisations = list()
+        self._groups = list()
+
     @classmethod
     def parse(cls, api, json):
         result = cls(api)
@@ -655,6 +661,30 @@ class Location(Model):
             setattr(result, k, v)
 
         return result
+
+    def __getstate__(self, action=None):
+        pickled = super(Location, self).__getstate__(action)
+        pickled["groupids"] = [g.id for g in self.groups]
+        pickled["organisationid"] = self.organisations[0].id
+
+
+        return pickled
+
+    @property
+    def organisations(self):
+        return self._organisations
+
+    @organisations.setter
+    def organisations(self, value):
+        self._organisations = value
+
+    @property
+    def groups(self):
+        return self._groups
+
+    @groups.setter
+    def groups(self, value):
+        self._groups = value
 
 class Procedure(Model):
     pass
