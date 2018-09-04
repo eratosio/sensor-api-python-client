@@ -89,7 +89,7 @@ class ApiTestCase(SensorApiTestCase):
 
     def generate_geolocation_stream(self, stream_id=None):
         sm = StreamMetaData()
-        sm.type = StreamMetaDataType.geolocation.value
+        sm.type = StreamMetaDataType.geolocation
         sm.interpolation_type = InterpolationType.continuous
         s = self._generate_stream(StreamResultType.geolocation, sm, stream_id)
 
@@ -97,7 +97,7 @@ class ApiTestCase(SensorApiTestCase):
 
     def generate_scalar_stream(self, stream_id=None):
         sm = StreamMetaData()
-        sm.type = StreamMetaDataType.scalar.value
+        sm.type = StreamMetaDataType.scalar
         sm.interpolation_type = InterpolationType.continuous
         sm.observed_property = "http://registry.it.csiro.au/def/environment/property/air_temperature"
         sm.unit_of_measure = "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/DegreeCelsius"
@@ -106,21 +106,21 @@ class ApiTestCase(SensorApiTestCase):
 
     def generate_vector_stream(self, length, stream_id=None):
         sm = StreamMetaData()
-        sm.type = StreamMetaDataType.vector.value
+        sm.type = StreamMetaDataType.vector
         sm.length = length
         s = self._generate_stream(StreamResultType.vector, sm, stream_id)
         return s
 
     def generate_image_stream(self, stream_id=None):
         sm = StreamMetaData()
-        sm.type = StreamMetaDataType.image.value
+        sm.type = StreamMetaDataType.image
 
         s = self._generate_stream(StreamResultType.image, sm, stream_id)
         return s
 
     def generate_regularly_binned_vector_stream(self, start, end, step, stream_id=None):
         sm = StreamMetaData()
-        sm.type = StreamMetaDataType.regularly_binned_vector.value
+        sm.type = StreamMetaDataType.regularly_binned_vector
         sm.start = start
         sm.end = end
         sm.step = step

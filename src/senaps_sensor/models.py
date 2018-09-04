@@ -326,6 +326,8 @@ class StreamMetaData(Model):
     def __getstate__(self, action=None):
         pickled = super(StreamMetaData, self).__getstate__(action)
 
+        pickled["type"] = self._type.value
+
         if self.interpolation_type:
             pickled["interpolationType"] = self.interpolation_type.value
 
@@ -342,7 +344,7 @@ class StreamMetaData(Model):
             pickled["lengthUnit"] = self.length_unit
 
         # clean up non scalar StreamMetaData keys
-        if self._type != StreamMetaDataType.scalar.value and self._type != StreamMetaDataType.regularly_binned_vector.value:
+        if self._type != StreamMetaDataType.scalar and self._type != StreamMetaDataType.regularly_binned_vector:
             for key in ['observedProperty', 'cumulative']:
                 try:
                     del pickled[key]
@@ -350,7 +352,7 @@ class StreamMetaData(Model):
                     pass
 
         # clean up non geo StreamMetaData keys
-        if self._type != StreamMetaDataType.scalar.value:
+        if self._type != StreamMetaDataType.scalar:
             for key in ['unitOfMeasure']:
                 try:
                     del pickled[key]
@@ -666,7 +668,6 @@ class Location(Model):
         pickled = super(Location, self).__getstate__(action)
         pickled["groupids"] = [g.id for g in self.groups]
         pickled["organisationid"] = self.organisations[0].id
-
 
         return pickled
 
