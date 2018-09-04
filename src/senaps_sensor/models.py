@@ -219,6 +219,8 @@ class Platform(Model):
                         setattr(platform, "groups", Group.parse_list(api, ev))
                     elif ek == "platformdeployment":
                         setattr(platform, "deployments", Deployment.parse_list(api, ev))
+                    elif ek == "streams":
+                        setattr(platform, "streams", Stream.parse_list(api, ev))
             else:
                 setattr(platform, k, v)
         return platform
