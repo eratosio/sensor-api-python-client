@@ -306,6 +306,23 @@ class ApiTestCase(SensorApiTestCase):
 
         self.api.destroy_stream(id=s.id)
 
+    def test_model_equals(self):
+
+        loc1 = self.generate_location()
+        loc2 = self.generate_location()
+
+        self.assertNotEquals(loc1, loc2)
+
+        #make location with same id as loc1
+        o = Organisation()
+        o.id = "sandbox"
+        loc3 = Location()
+        loc3.organisations = [o]
+        loc3.id = loc1.id
+        loc3.geoJson = {'type': 'Point', 'coordinates': [147.0, -42.0]}
+
+        self.assertEqual(loc1, loc3)
+
 
     def test_update_stream_with_results(self):
 
