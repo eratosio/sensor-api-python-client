@@ -408,7 +408,9 @@ class StreamMetaData(Model):
 
         setattr(stream_meta_data, '_json', json)
         for k, v in json.items():
-            if k == "_embedded":
+            if k == "type":
+                setattr(stream_meta_data, "type", StreamMetaDataType(v))
+            elif k == "_embedded":
                 for ek, ev in v.items():
                     if ek == "interpolationType":
                         ev = ev[0].get('_links', {}).get('self', {}).get('href', )
