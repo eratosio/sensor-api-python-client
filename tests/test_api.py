@@ -307,6 +307,46 @@ class ApiTestCase(SensorApiTestCase):
         self.api.destroy_stream(id=s.id)
 
 
+    def test_update_stream_with_results(self):
+
+        s = self.generate_scalar_stream()
+
+        self.api.create_stream(s)
+        o, points = self.generate_observations()
+
+        created_observation = self.api.create_observations(o, streamid=s.id)
+
+        self.assertEqual(created_observation.get('message'), "Observations uploaded")
+        self.assertEqual(created_observation.get('status'), 201)
+
+        #retrieve stream (will now have resultsSummary)
+        retrieved_stream = self.api.get_stream(id=s.id)
+        #mutate stream a little
+        retrieved_stream.samplePeriod = 'PT20S'
+        #update stream
+        self.api.update_stream(retrieved_stream)
+
+        updated_stream = self.api.get_stream(id=s.id)
+
+        self.assertEqual(updated_stream.samplePeriod, retrieved_stream.samplePeriod)
+
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
+
+
+    def test_get_stream_enums(self):
+
+        s = self.generate_scalar_stream()
+
+        self.api.create_stream(s)
+
+        retrieved_stream = self.api.get_stream(id=s.id)
+
+        self.assertEqual(type(s.metadata.type), type(retrieved_stream.metadata.type))
+
+        self.api.destroy_stream(id=s.id)
+
+
     @tape.use_cassette('test_create_scalar_stream.json')
     def test_create_scalar_stream(self):
         s = self.generate_scalar_stream()
@@ -344,6 +384,8 @@ class ApiTestCase(SensorApiTestCase):
         self.assertEqual(actual_json, required_json)
 
         self.api.destroy_stream(id=s.id)
+
+
 
 
     @tape.use_cassette('test_create_vector_stream.json')
@@ -545,9 +587,7 @@ class ApiTestCase(SensorApiTestCase):
         self.api.destroy_observations(streamid=s.id)
         self.api.destroy_stream(id=s.id)
 
-    @tape.use_cassette('test_create_scalar_observations.json')
-    def test_create_scalar_observations(self):
-        s = self.generate_scalar_stream()
+    def generate_observations(self):
 
         o = Observation()
 
@@ -567,6 +607,15 @@ class ApiTestCase(SensorApiTestCase):
                 'v': p.get('v')
             }
             o.results.append(item)
+
+        return o, points
+
+
+    @tape.use_cassette('test_create_scalar_observations.json')
+    def test_create_scalar_observations(self):
+        s = self.generate_scalar_stream()
+
+        o, points = self.generate_observations()
 
         dt_format = '%Y-%m-%dT%H:%M:%S.%fZ'
         required_state = {
