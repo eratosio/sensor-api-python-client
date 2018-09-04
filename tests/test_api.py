@@ -27,10 +27,12 @@ import time
 import traceback
 import sys
 import datetime
+import uuid
 
 from senaps_sensor.error import SenapsError
-from senaps_sensor.models import Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, StreamMetaDataType, \
-    InterpolationType, Observation, UnivariateResult
+from senaps_sensor.models import Deployment, Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, StreamMetaDataType, \
+    InterpolationType, Observation, UnivariateResult, Location
+
 from senaps_sensor.utils import SenseTEncoder
 from senaps_sensor.binder import bind_api
 
@@ -53,35 +55,45 @@ def dumps(*args, **kwargs):
 
 
 class ApiTestCase(SensorApiTestCase):
-    existing_platform_id = '05b31a8b-0549-4484-a1b9-a05b89fc677f'
-    new_platform_id = 'bdd78502-11bc-4645-9597-0d3231f27212'
-    non_existent_stream_id = '0228cefb-8782-4f99-9492-ad3f1febdc12'
-    new_stream_id = '21cdbef1f3da-2949-99f4-2878-bfec8220'
 
     def setUp(self):
         super(ApiTestCase, self).setUp()
 
-    def generate_platform(self):
+    def generate_location(self):
         o = Organisation()
         o.id = "sandbox"
 
-        g = Group()
-        g.id = "group1"
+        loc = Location()
+        loc.organisations = [o]
+        loc.id = str(uuid.uuid1())
+        loc.geoJson = {'type': 'Point', 'coordinates': [147.0, -42.0]}
+
+        return loc
+
+    def generate_platform(self, locationid):
+        o = Organisation()
+        o.id = "sandbox"
+
+        d = Deployment()
+        d.name = 'Deployment 1'
+        d.locationid = locationid
+        d.validTime = {}
 
         p = Platform()
-        p.id = "test_platform_{0}".format(self.new_platform_id)
-        p.name = "A Platform create for unittests"
+        p.id = str(uuid.uuid1())
+        p.name = "A Platform created for unittests"
         p.organisations = [o]
-        p.groups = [g]
+        p.deployments = [d]
+
         return p
 
     def generate_geolocation_stream(self, stream_id=None):
         sm = StreamMetaData()
         sm.type = StreamMetaDataType.geolocation
         sm.interpolation_type = InterpolationType.continuous
-        s,p = self._generate_stream(StreamResultType.geolocation, sm, stream_id)
+        s = self._generate_stream(StreamResultType.geolocation, sm, stream_id)
 
-        return s,p
+        return s
 
     def generate_scalar_stream(self, stream_id=None):
         sm = StreamMetaData()
@@ -89,22 +101,22 @@ class ApiTestCase(SensorApiTestCase):
         sm.interpolation_type = InterpolationType.continuous
         sm.observed_property = "http://registry.it.csiro.au/def/environment/property/air_temperature"
         sm.unit_of_measure = "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/DegreeCelsius"
-        s, p = self._generate_stream(StreamResultType.scalar, sm, stream_id)
-        return s, p
+        s = self._generate_stream(StreamResultType.scalar, sm, stream_id)
+        return s
 
     def generate_vector_stream(self, length, stream_id=None):
         sm = StreamMetaData()
         sm.type = StreamMetaDataType.vector
         sm.length = length
-        s, p = self._generate_stream(StreamResultType.vector, sm, stream_id)
-        return s, p
+        s = self._generate_stream(StreamResultType.vector, sm, stream_id)
+        return s
 
     def generate_image_stream(self, stream_id=None):
         sm = StreamMetaData()
         sm.type = StreamMetaDataType.image
 
-        s, p = self._generate_stream(StreamResultType.image, sm, stream_id)
-        return s, p
+        s = self._generate_stream(StreamResultType.image, sm, stream_id)
+        return s
 
     def generate_regularly_binned_vector_stream(self, start, end, step, stream_id=None):
         sm = StreamMetaData()
@@ -117,8 +129,8 @@ class ApiTestCase(SensorApiTestCase):
         sm.amplitude_unit = "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Percent"
         sm.length_unit = "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Angstrom"
 
-        s, p = self._generate_stream(StreamResultType.vector, sm, stream_id)
-        return s, p
+        s = self._generate_stream(StreamResultType.vector, sm, stream_id)
+        return s
 
     def generate_group(self, id):
 
@@ -129,18 +141,13 @@ class ApiTestCase(SensorApiTestCase):
         return g
 
     def _generate_stream(self, stream_type, stream_meta_data, stream_id=None):
-        p = self.generate_platform()
 
         o = Organisation()
-        o.id = p.organisations[0].id
-
-        g = Group()
-        g.id = p.groups[0].id
+        o.id = 'sandbox'
 
         s = Stream()
-        s.id = "{0}_{1}".format(stream_id if stream_id else self.new_stream_id, stream_type.value)
+        s.id = stream_id if stream_id is not None else str(uuid.uuid1())
 
-        s.groups = [g]
         s.organisations = [o]
 
         s.result_type = stream_type
@@ -150,7 +157,7 @@ class ApiTestCase(SensorApiTestCase):
 
         s.metadata = stream_meta_data
 
-        return s, p
+        return s
 
     @tape.use_cassette('test_create_platform.json')
     def test_create_platform(self):
@@ -159,117 +166,107 @@ class ApiTestCase(SensorApiTestCase):
         :return: None
         """
         # create
-        p = self.generate_platform()
+        loc = self.generate_location()
+        p = self.generate_platform(loc.id)
 
+        print(loc.to_json("create"))
+
+        actual_json = p.to_json("create")
+
+        print(actual_json)
+
+        # verify json
         required_json = dumps({
             "id": p.id,
             "name": p.name,
             "organisationid": p.organisations[0].id,
             "groupids": [
-                p.groups[0].id
+
             ],
             "streamids": [
             ],
             "deployments": [
-            ]
-        }, sort_keys=True)  # be explict with key order since dumps gives us a string
+                {"name": "Deployment 1", "locationid": loc.id, "validTime": {}}
+        ]
+        }, sort_keys = True)  # be explict with key order since dumps gives us a string
 
-        actual_json = p.to_json("create")
-
-        # verify json
         self.assertEqual(actual_json, required_json)
 
-        created_platform = self.api.create_platform(p)
+        self.api.create_location(loc)
+        self.api.create_platform(p)
+
+        created_platform = self.api.get_platform(id=p.id)
+
+        print(created_platform)
 
         # verify
         self.assertEqual(created_platform.id, p.id)
         self.assertEqual(created_platform.name, p.name)
+        self.assertEqual(created_platform.deployments[0].location.id, loc.id)
 
-    @skip("Permissions issues")
-    @skip
+        location = self.api.get_location(id=loc.id)
+        self.assertEqual(location.geojson['coordinates'][0], loc.geoJson['coordinates'][0])
+
+        self.api.destroy_platform(id=p.id)
+        self.api.destroy_location(id=loc.id)
+
     def test_update_platform(self):
         """
         Platform update test, no clean ups
         :return: None
         """
         # create
-        p = self.generate_platform()
+        loc = self.generate_location()
+        p = self.generate_platform(locationid=loc.id)
+        self.api.create_location(loc)
         created_platform = self.api.create_platform(p)
 
         # update, by appending id to name attr
-        created_platform.name += created_platform.id
+        created_platform.name += 'UPDATED'
         updated_platform = self.api.update_platform(created_platform)
 
         # verify
         self.assertEqual(updated_platform.name, created_platform.name)
 
-    @skip("Permissions issues")
-    @skip
     def test_delete_platform(self):
         """
         Platform deletion test, create and cleanup
         :return: None
         """
         # create
-        p = self.generate_platform()
+        loc = self.generate_location()
+        p = self.generate_platform(loc.id)
+        self.api.create_location(loc)
         created_platform = self.api.create_platform(p)
-        created_platform.name += created_platform.id
 
         # delete
-        deleted_platform = self.api.destroy_platform(created_platform)
+        self.api.destroy_platform(created_platform)
 
         # verify
-        self.assertIsNone(deleted_platform)
+        with self.assertRaises(SenapsError):
+            self.api.get_platform(id=p.id)
 
-    @tape.use_cassette('test_verify_init_stream.json')
-    @skip
-    def test_verify_init_stream(self):
-        # required
-        stream = {}
-        stream['id'] = "{0}_location".format(self.existing_platform_id)
-        stream['resulttype'] = 'geolocationvalue'
-        stream['groupids'] = ['tourtracker']
-        stream['samplePeriod'] = 'PT10S'
-        stream['reportingPeriod'] = 'P1D'
-        stream['organisationid'] = 'utas'
-        stream['streamMetadata'] = {
-            # 'type': '.GeoLocationStreamMetaData', # type is not used or returned after creation
-            'interpolationType': 'http://www.opengis.net/def/waterml/2.0/interpolationType/Continuous',
-        }
-        required_json = dumps(stream, sort_keys=True)  # be explict with key order since dumps gives us a string
+        self.api.destroy_location(loc.id)
 
-        # get from api
-        s = self.api.get_stream(id=stream['id'])
-        actual_json = s.to_json("get")
-
-        # verify json
-        self.assertEqual(actual_json, required_json)
 
     @tape.use_cassette('test_non_existent_stream.json')
-    @skip
     def test_non_existent_stream(self):
-        stream_nonexistent_id = "{0}_nonexistent".format(self.non_existent_stream_id)
+        stream_nonexistent_id = str(uuid.uuid1())
         # stream_exists_id = "{0}_location".format(self.existing_platform_id)
-
-        with self.assertRaises(SenapsError) as arc:
-            s = self.api.get_stream(id=stream_nonexistent_id)
 
         try:
             s = self.api.get_stream(id=stream_nonexistent_id)
         except SenapsError as ex:
-            self.assertEqual(ex.api_code, 401)
+            self.assertEqual(ex.api_code, 404)
 
     @tape.use_cassette('test_create_geolocation_stream.json')
     def test_create_geolocation_stream(self):
-        s, p = self.generate_geolocation_stream()
+        s = self.generate_geolocation_stream()
 
         required_state = {
             "id": s.id,
             "resulttype": "geolocationvalue",
-            "organisationid": p.organisations[0].id,
-            "groupids": [
-                p.groups[0].id
-            ],
+            "organisationid": s.organisations[0].id,
             "samplePeriod": "PT10S",
             "reportingPeriod": 'P1D',
             "streamMetadata": {
@@ -296,17 +293,89 @@ class ApiTestCase(SensorApiTestCase):
         # verify json
         self.assertEqual(actual_json, required_json)
 
+        self.api.destroy_stream(id=s.id)
+
+    def test_update_stream(self):
+
+        s = self.generate_scalar_stream()
+        s.samplePeriod = 'PT10S'
+
+        self.api.create_stream(s)
+        s.samplePeriod = 'PT20S'
+
+        self.api.update_stream(s)
+        updated_stream = self.api.get_stream(id=s.id)
+
+        self.assertEqual(s.samplePeriod, updated_stream.samplePeriod)
+
+        self.api.destroy_stream(id=s.id)
+
+    def test_model_equals(self):
+
+        loc1 = self.generate_location()
+        loc2 = self.generate_location()
+
+        self.assertNotEquals(loc1, loc2)
+
+        #make location with same id as loc1
+        o = Organisation()
+        o.id = "sandbox"
+        loc3 = Location()
+        loc3.organisations = [o]
+        loc3.id = loc1.id
+        loc3.geoJson = {'type': 'Point', 'coordinates': [147.0, -42.0]}
+
+        self.assertEqual(loc1, loc3)
+
+
+    def test_update_stream_with_results(self):
+
+        s = self.generate_scalar_stream()
+
+        self.api.create_stream(s)
+        o, points = self.generate_observations()
+
+        created_observation = self.api.create_observations(o, streamid=s.id)
+
+        self.assertEqual(created_observation.get('message'), "Observations uploaded")
+        self.assertEqual(created_observation.get('status'), 201)
+
+        #retrieve stream (will now have resultsSummary)
+        retrieved_stream = self.api.get_stream(id=s.id)
+        #mutate stream a little
+        retrieved_stream.samplePeriod = 'PT20S'
+        #update stream
+        self.api.update_stream(retrieved_stream)
+
+        updated_stream = self.api.get_stream(id=s.id)
+
+        self.assertEqual(updated_stream.samplePeriod, retrieved_stream.samplePeriod)
+
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
+
+
+    def test_get_stream_enums(self):
+
+        s = self.generate_scalar_stream()
+
+        self.api.create_stream(s)
+
+        retrieved_stream = self.api.get_stream(id=s.id)
+
+        self.assertEqual(type(s.metadata.type), type(retrieved_stream.metadata.type))
+
+        self.api.destroy_stream(id=s.id)
+
+
     @tape.use_cassette('test_create_scalar_stream.json')
     def test_create_scalar_stream(self):
-        s, p = self.generate_scalar_stream()
+        s = self.generate_scalar_stream()
 
         required_state = {
             "id": s.id,
             "resulttype": "scalarvalue",
-            "organisationid": p.organisations[0].id,
-            "groupids": [
-                p.groups[0].id
-            ],
+            "organisationid": s.organisations[0].id,
             "samplePeriod": "PT10S",
             "reportingPeriod": 'P1D',
             "streamMetadata": {
@@ -335,18 +404,20 @@ class ApiTestCase(SensorApiTestCase):
         # verify json
         self.assertEqual(actual_json, required_json)
 
+        self.api.destroy_stream(id=s.id)
+
+
+
 
     @tape.use_cassette('test_create_vector_stream.json')
     def test_create_vector_stream(self):
-        s, p = self.generate_vector_stream(3)
+        s = self.generate_vector_stream(3)
 
         required_state = {
             "id": s.id,
             "resulttype": "vectorvalue",
-            "organisationid": p.organisations[0].id,
-            "groupids": [
-                p.groups[0].id
-            ],
+            "organisationid": s.organisations[0].id,
+
             "samplePeriod": "PT10S",
             "reportingPeriod": 'P1D',
             "streamMetadata": {
@@ -373,18 +444,17 @@ class ApiTestCase(SensorApiTestCase):
         # verify json
         self.assertEqual(actual_json, required_json)
 
+        self.api.destroy_stream(id=s.id)
+
 
     @tape.use_cassette('test_create_regularly_binned_vector_stream.json')
     def test_create_regularly_binned_vector_stream(self):
-        s, p = self.generate_regularly_binned_vector_stream(10, 20, 2, "ba94aada-84d0-420c-87d9-5510a17c176d")
+        s = self.generate_regularly_binned_vector_stream(10, 20, 2, "ba94aada-84d0-420c-87d9-5510a17c176d")
 
         required_state = {
             "id": s.id,
             "resulttype": "vectorvalue",
-            "organisationid": p.organisations[0].id,
-            "groupids": [
-                p.groups[0].id
-            ],
+            "organisationid": s.organisations[0].id,
             "samplePeriod": "PT10S",
             "reportingPeriod": 'P1D',
             "streamMetadata": {
@@ -416,17 +486,16 @@ class ApiTestCase(SensorApiTestCase):
         # verify json
         self.assertEqual(actual_json, required_json)
 
+        self.api.destroy_stream(id=s.id)
+
     @tape.use_cassette('test_create_image_stream.json')
     def test_create_image_stream(self):
-        s, p = self.generate_image_stream("403e2a68-7e4c-43e3-93d4-71d8980014fa")
+        s = self.generate_image_stream("403e2a68-7e4c-43e3-93d4-71d8980014fa")
 
         required_state = {
             "id": s.id,
             "resulttype": "imagevalue",
-            "organisationid": p.organisations[0].id,
-            "groupids": [
-                p.groups[0].id
-            ],
+            "organisationid": s.organisations[0].id,
             "samplePeriod": "PT10S",
             "reportingPeriod": 'P1D',
             "streamMetadata": {
@@ -452,10 +521,12 @@ class ApiTestCase(SensorApiTestCase):
         # verify json
         self.assertEqual(actual_json, required_json)
 
+        self.api.destroy_stream(id=s.id)
+
 
     @tape.use_cassette('test_create_geolocation_observations.json')
     def test_create_geolocation_observations(self):
-        s, p = self.generate_geolocation_stream()
+        s = self.generate_geolocation_stream()
 
         o = Observation()
 
@@ -534,9 +605,10 @@ class ApiTestCase(SensorApiTestCase):
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)
 
-    @tape.use_cassette('test_create_scalar_observations.json')
-    def test_create_scalar_observations(self):
-        s, p = self.generate_scalar_stream()
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
+
+    def generate_observations(self):
 
         o = Observation()
 
@@ -556,6 +628,15 @@ class ApiTestCase(SensorApiTestCase):
                 'v': p.get('v')
             }
             o.results.append(item)
+
+        return o, points
+
+
+    @tape.use_cassette('test_create_scalar_observations.json')
+    def test_create_scalar_observations(self):
+        s = self.generate_scalar_stream()
+
+        o, points = self.generate_observations()
 
         dt_format = '%Y-%m-%dT%H:%M:%S.%fZ'
         required_state = {
@@ -602,6 +683,9 @@ class ApiTestCase(SensorApiTestCase):
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)
 
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
+
     @tape.use_cassette('test_create_vector_observations.json')
     def test_create_vector_observations(self):
         o = Observation()
@@ -611,7 +695,7 @@ class ApiTestCase(SensorApiTestCase):
 
         points = [1, 2, 3]
 
-        s, p = self.generate_vector_stream(len(points))
+        s = self.generate_vector_stream(len(points))
 
         item = UnivariateResult()
         item.t = dt
@@ -649,6 +733,9 @@ class ApiTestCase(SensorApiTestCase):
 
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)
+
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
 
     @tape.use_cassette('test_create_regularly_binned_vector_observations.json')
     def test_create_regularly_binned_vector_observations(self):
@@ -659,7 +746,7 @@ class ApiTestCase(SensorApiTestCase):
 
         points = [1, 2, 3]
 
-        s, p = self.generate_regularly_binned_vector_stream(1, 3, 1, "a8a8ce25-30f6-4b1a-ac78-533d2887280f")
+        s = self.generate_regularly_binned_vector_stream(1, 3, 1, "a8a8ce25-30f6-4b1a-ac78-533d2887280f")
 
         item = UnivariateResult()
         item.t = dt
@@ -698,10 +785,13 @@ class ApiTestCase(SensorApiTestCase):
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)
 
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
+
 
     @tape.use_cassette('test_create_image_observations.json')
     def test_create_image_observations(self):
-        s, p = self.generate_image_stream("13136661-8c66-47c6-9cd1-b74e4214a4ab")
+        s = self.generate_image_stream("13136661-8c66-47c6-9cd1-b74e4214a4ab")
 
         o = Observation()
 
@@ -773,6 +863,9 @@ class ApiTestCase(SensorApiTestCase):
         print("done creating observations %s" % s.id)
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)
+
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
 
     @tape.use_cassette('test_connection_timeout.json')
     def test_connection_timeout(self):
