@@ -326,8 +326,6 @@ class StreamMetaData(Model):
     def __getstate__(self, action=None):
         pickled = super(StreamMetaData, self).__getstate__(action)
 
-        pickled["type"] = self._type.value
-
         if self.interpolation_type:
             pickled["interpolationType"] = self.interpolation_type.value
 
@@ -389,7 +387,7 @@ class StreamMetaData(Model):
         if not self.type:
             raise SenapsError("Stream creation requires an type.")
         if self.type is not None:
-            pickled["type"] = self._type
+            pickled["type"] = self._type.value
         if self.length is not None:
             pickled["length"] = self._length
 
