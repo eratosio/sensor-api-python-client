@@ -185,6 +185,20 @@ class API(object):
         )
 
     @property
+    def get_platform(self):
+        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/get_platform_id
+            :allowed_param: 'id'
+        """
+        return bind_api(
+            api=self,
+            path='/platforms/{id}',
+            method='GET',
+            payload_type='platform',
+            allowed_param=['id'],
+            require_auth=True,
+        )
+
+    @property
     def streams(self):
         """ :reference: https://data.sense-t.org.au/api-docs/#!/default/get_streams
             :allowed_param: 'id,limit'
@@ -309,6 +323,23 @@ class API(object):
             method='GET',
             payload_type='location',
             allowed_param=['id'],
+            require_auth=True,
+        )
+
+    @property
+    def destroy_location(self):
+        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/delete_locations_id
+            :allowed_param: 'id', 'cascade'
+        """
+        return bind_api(
+            api=self,
+            path='/locations/{id}',
+            method='DELETE',
+            payload_type='location',
+            allowed_param=[
+                'id',
+                'cascade',
+            ],
             require_auth=True,
         )
 

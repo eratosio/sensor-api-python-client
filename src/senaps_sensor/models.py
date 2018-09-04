@@ -160,6 +160,12 @@ class Model(object):
         state = ['%s=%s' % (k, repr(v)) for (k, v) in vars(self).items()]
         return '%s(%s)' % (self.__class__.__name__, ', '.join(state))
 
+    def __eq__(self, other):
+        if self.id == other.id:
+            return True
+        else:
+            return False
+
 
 class JSONModel(Model):
     @classmethod
@@ -211,8 +217,10 @@ class Platform(Model):
                         setattr(platform, "organisations", Organisation.parse_list(api, ev))
                     elif ek == "groups":
                         setattr(platform, "groups", Group.parse_list(api, ev))
-                    elif ek == "deployments":
+                    elif ek == "platformdeployment":
                         setattr(platform, "deployments", Deployment.parse_list(api, ev))
+                    elif ek == "streams":
+                        setattr(platform, "streams", Stream.parse_list(api, ev))
             else:
                 setattr(platform, k, v)
         return platform
@@ -408,7 +416,9 @@ class StreamMetaData(Model):
 
         setattr(stream_meta_data, '_json', json)
         for k, v in json.items():
-            if k == "_embedded":
+            if k == "type":
+                setattr(stream_meta_data, "type", StreamMetaDataType(v))
+            elif k == "_embedded":
                 for ek, ev in v.items():
                     if ek == "interpolationType":
                         ev = ev[0].get('_links', {}).get('self', {}).get('href', )
@@ -646,6 +656,12 @@ class Group(Model):
 
 # TODO - not all attributes are implemented
 class Location(Model):
+
+    def __init__(self, api=None):
+        super(Location, self).__init__(api=api)
+        self._organisations = list()
+        self._groups = list()
+
     @classmethod
     def parse(cls, api, json):
         result = cls(api)
@@ -655,6 +671,29 @@ class Location(Model):
             setattr(result, k, v)
 
         return result
+
+    def __getstate__(self, action=None):
+        pickled = super(Location, self).__getstate__(action)
+        pickled["groupids"] = [g.id for g in self.groups]
+        pickled["organisationid"] = self.organisations[0].id
+
+        return pickled
+
+    @property
+    def organisations(self):
+        return self._organisations
+
+    @organisations.setter
+    def organisations(self, value):
+        self._organisations = value
+
+    @property
+    def groups(self):
+        return self._groups
+
+    @groups.setter
+    def groups(self, value):
+        self._groups = value
 
 class Procedure(Model):
     pass
@@ -751,8 +790,15 @@ class Deployment(Model):
     def parse(cls, api, json):
         role = cls(api)
         setattr(role, '_json', json)
+
         for k, v in json.items():
-            setattr(role, k, v)
+            if k == "_embedded":
+                for ek, ev in v.items():
+                    if ek == "location":
+                        setattr(role, "location", Location.parse(api, ev[0]))
+            else:
+                setattr(role, k, v)
+
         return role
 
     @classmethod
