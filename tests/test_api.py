@@ -202,6 +202,10 @@ class ApiTestCase(SensorApiTestCase):
         # verify
         self.assertEqual(created_platform.id, p.id)
         self.assertEqual(created_platform.name, p.name)
+        self.assertEqual(created_platform.deployments[0].location.id, loc.id)
+
+        location = self.api.get_location(id=loc.id)
+        self.assertEqual(location.geojson['coordinates'][0], loc.geoJson['coordinates'][0])
 
         self.api.destroy_platform(id=p.id)
         self.api.destroy_location(id=loc.id)

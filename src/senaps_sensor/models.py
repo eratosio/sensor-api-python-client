@@ -788,8 +788,15 @@ class Deployment(Model):
     def parse(cls, api, json):
         role = cls(api)
         setattr(role, '_json', json)
+
         for k, v in json.items():
-            setattr(role, k, v)
+            if k == "_embedded":
+                for ek, ev in v.items():
+                    if ek == "location":
+                        setattr(role, "location", Location.parse(api, ev[0]))
+            else:
+                setattr(role, k, v)
+
         return role
 
     @classmethod
