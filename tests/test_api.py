@@ -169,6 +169,10 @@ class ApiTestCase(SensorApiTestCase):
         loc = self.generate_location()
         p = self.generate_platform(loc.id)
 
+        s = self.generate_scalar_stream()
+
+        p.streams.append(s)
+
         print(loc.to_json("create"))
 
         actual_json = p.to_json("create")
@@ -184,6 +188,7 @@ class ApiTestCase(SensorApiTestCase):
 
             ],
             "streamids": [
+                s.id
             ],
             "deployments": [
                 {"name": "Deployment 1", "locationid": loc.id, "validTime": {}}
@@ -192,6 +197,7 @@ class ApiTestCase(SensorApiTestCase):
 
         self.assertEqual(actual_json, required_json)
 
+        self.api.create_stream(s)
         self.api.create_location(loc)
         self.api.create_platform(p)
 
@@ -203,12 +209,14 @@ class ApiTestCase(SensorApiTestCase):
         self.assertEqual(created_platform.id, p.id)
         self.assertEqual(created_platform.name, p.name)
         self.assertEqual(created_platform.deployments[0].location.id, loc.id)
+        self.assertEqual(created_platform.streams[0].id, s.id)
 
         location = self.api.get_location(id=loc.id)
         self.assertEqual(location.geojson['coordinates'][0], loc.geoJson['coordinates'][0])
 
         self.api.destroy_platform(id=p.id)
         self.api.destroy_location(id=loc.id)
+        self.api.destroy_stream(id=s.id)
 
     def test_update_platform(self):
         """
