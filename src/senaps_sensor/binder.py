@@ -48,6 +48,13 @@ re_path_template = re.compile('{\w+}')
 
 log = logging.getLogger('senset.binder')
 
+try:
+    from sensetdp.models import Model as SenseTModel
+    
+    model_classes = (Model, SenseTModel)
+except ImportError:
+    model_classes = (Model,)
+
 
 def bind_api(**config):
     class APIMethod(object):
@@ -136,13 +143,13 @@ def bind_api(**config):
             return session
 
         def build_data(self, args, kwargs):
-            if len(args) == 1 and isinstance(args[0], Model):
+            if len(args) == 1 and isinstance(args[0], model_classes):
                 # explode model.to_state() of model instance into kwargs, clear args
                 kwargs.update(args[0].to_state(self.action))
                 args = list()
             else:
                 for k, v in kwargs.items():
-                    if isinstance(v, Model):
+                    if isinstance(v, model_classes):
                         kwargs[k] = v.to_state(self.action)
 
             # filter kwargs for allowed_param and not in query_only_param
@@ -208,10 +215,10 @@ def bind_api(**config):
                     # must restore api reference
                     if isinstance(cache_result, list):
                         for result in cache_result:
-                            if isinstance(result, Model):
+                            if isinstance(result, model_classes):
                                 result._api = self.api
                     else:
-                        if isinstance(cache_result, Model):
+                        if isinstance(cache_result, model_classes):
                             cache_result._api = self.api
                     self.api.cached_result = True
                     return cache_result
