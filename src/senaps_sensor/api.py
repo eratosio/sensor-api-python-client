@@ -27,7 +27,7 @@ from senaps_sensor.binder import bind_api
 from senaps_sensor.error import SenapsError
 from senaps_sensor.parsers import ModelParser, Parser
 from senaps_sensor.utils import list_to_csv
-
+from senaps_sensor.models import User
 
 class API(object):
     """Sense-T API"""
@@ -85,11 +85,22 @@ class API(object):
                     actual=type(self.parser)
                 )
             )
-
+    
+    @property
     def me(self):
-        """ Get the authenticated user """
-        return self.get_user(userid=self.auth.get_username())
-
+        """ Get the authenticated user using root api call
+            :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/
+            :allowed_param: 
+        """
+        res = bind_api(
+            api=self,
+            path='/',
+            payload_type='json',
+            allowed_param=[],
+            require_auth=True,
+            )
+        return self.get_user(userid=res()['_embedded']['user'][0]['id'])
+        
     @property
     def get_user(self):
         """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/get_users_userid
