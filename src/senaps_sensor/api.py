@@ -27,7 +27,7 @@ from senaps_sensor.binder import bind_api
 from senaps_sensor.error import SenapsError
 from senaps_sensor.parsers import ModelParser, Parser
 from senaps_sensor.utils import list_to_csv
-from senaps_sensor.models import User
+
 
 class API(object):
     """Sense-T API"""
