@@ -33,11 +33,11 @@ else:
 class AuthTestCase(SensorApiTestCase):
     @tape.use_cassette('test_credentials_configured.json')
     def test_credentials_configured(self):
-        assert self.api.me().id == username
+        assert self.api.me.id == username
 
     @tape.use_cassette('test_roles.json')
     def test_roles(self):
-        api_roles = self.api.me().roles
+        api_roles = self.api.me.roles
         assert len(api_roles) >= 1 #at least one role
 
     def test_auth_header_not_unicode(self):
