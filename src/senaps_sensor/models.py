@@ -795,7 +795,7 @@ class Deployment(Model):
             if k == "_embedded":
                 for ek, ev in v.items():
                     if ek == "location":
-                        setattr(role, "location", Location.parse(api, ev[0]))
+                        setattr(role, "_location", Location.parse(api, ev[0]))
             else:
                 setattr(role, k, v)
 
@@ -812,6 +812,22 @@ class Deployment(Model):
         for obj in item_list:
             results.append(cls.parse(api, obj))
         return results
+
+    def __getstate__(self, action=None):
+        pickled = super(Deployment, self).__getstate__(action)
+
+        if self.location:
+           pickled["locationid"] = self.location.id
+
+        return pickled
+
+    @property
+    def location(self):
+        return self._location
+
+    @location.setter
+    def location(self, value):
+        self._location = value
 
     def permissions(self):
         raise NotImplementedError("Not implemented.")

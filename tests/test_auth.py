@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
-from __future__ import unicode_literals, absolute_import, print_function
+from __future__ import absolute_import, print_function
 from .config import SensorApiTestCase, username, tape
 
 import unittest
@@ -33,10 +33,23 @@ else:
 class AuthTestCase(SensorApiTestCase):
     @tape.use_cassette('test_credentials_configured.json')
     def test_credentials_configured(self):
-        assert self.api.me().id == username
+        assert self.api.me.id == username
 
     @tape.use_cassette('test_roles.json')
     def test_roles(self):
-        api_roles = self.api.me().roles
+        api_roles = self.api.me.roles
         assert len(api_roles) >= 1 #at least one role
 
+    def test_auth_header_not_unicode(self):
+
+        from requests import PreparedRequest
+
+        from requests.structures import CaseInsensitiveDict
+
+        p = PreparedRequest()
+        p.headers = CaseInsensitiveDict()
+        r = self.api.auth(p)
+        k = r.headers.keys()
+        for key in k:
+            if key == 'Authorization':
+                self.assertTrue(type(key) == str, 'Authorization header is unicode not str. Ensure unicode_literals are not imported.')
