@@ -70,13 +70,13 @@ class ApiTestCase(SensorApiTestCase):
 
         return loc
 
-    def generate_platform(self, locationid):
+    def generate_platform(self, location):
         o = Organisation()
         o.id = "sandbox"
 
         d = Deployment()
         d.name = 'Deployment 1'
-        d.locationid = locationid
+        d.location = location
         d.validTime = {}
 
         p = Platform()
@@ -167,8 +167,7 @@ class ApiTestCase(SensorApiTestCase):
         """
         # create
         loc = self.generate_location()
-        p = self.generate_platform(loc.id)
-
+        p = self.generate_platform(loc)
         s = self.generate_scalar_stream()
 
         p.streams.append(s)
@@ -225,7 +224,7 @@ class ApiTestCase(SensorApiTestCase):
         """
         # create
         loc = self.generate_location()
-        p = self.generate_platform(locationid=loc.id)
+        p = self.generate_platform(location=loc)
         self.api.create_location(loc)
         created_platform = self.api.create_platform(p)
 
@@ -243,7 +242,7 @@ class ApiTestCase(SensorApiTestCase):
         """
         # create
         loc = self.generate_location()
-        p = self.generate_platform(loc.id)
+        p = self.generate_platform(loc)
         self.api.create_location(loc)
         created_platform = self.api.create_platform(p)
 
