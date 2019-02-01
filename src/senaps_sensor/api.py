@@ -423,7 +423,7 @@ class API(object):
     @property
     def create_group(self):
         """ :reference:
-        https://sensor-cloud.io/api-docs/#!/default/put_groups_id
+        https://senaps.io/api-docs/#!/default/put_groups_id
             :allowed_param: 'id', 'name', 'organisationid', 'description', 'groupids'
         """
         return bind_api(
@@ -444,7 +444,7 @@ class API(object):
 
     @property
     def get_groups(self):
-        """ :reference: https://sensor-cloud.io/api-docs/#!/default/get_groups
+        """ :reference: https://senaps.io/api-docs/#!/default/get_groups
             :allowed_param: 'id', 'organisationid', 'groupids', 'limit', 'skip', 'expand', 'recursive'
         """
         return bind_api(
@@ -488,7 +488,7 @@ class API(object):
 
     @property
     def get_group(self):
-        """ :reference: https://sensor-cloud.io/api-docs/#!/default/get_group
+        """ :reference: https://senaps.io/api-docs/#!/default/get_group
             :allowed_param: 'id', 'recursive'
         """
         return bind_api(
