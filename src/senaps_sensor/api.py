@@ -129,7 +129,9 @@ class API(object):
                 "name",
                 "organisationid",
                 "groupids",
-                "streamids"
+                "streamids",
+                'usermetadatafield',
+                'usermetadatavalues'
             ],
             require_auth=True,
         )
@@ -152,6 +154,7 @@ class API(object):
                 'groupids',
                 'streamids',
                 'deployments',
+                'usermetadata',
             ],
             require_auth=True,
         )
@@ -438,6 +441,7 @@ class API(object):
                 'organisationid',
                 'description',
                 'groupids',
+                'usermetadata'
             ],
             require_auth=True,
         )
