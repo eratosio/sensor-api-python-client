@@ -235,7 +235,8 @@ class API(object):
                 'organisationid',
                 'locationid',
                 'usermetadatafield',
-                'usermetadatavalues'
+                'usermetadatavalues',
+                'properties'
             ],
             payload_list=True,
             require_auth=True,
