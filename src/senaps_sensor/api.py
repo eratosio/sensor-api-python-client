@@ -129,7 +129,9 @@ class API(object):
                 "name",
                 "organisationid",
                 "groupids",
-                "streamids"
+                "streamids",
+                'usermetadatafield',
+                'usermetadatavalues'
             ],
             require_auth=True,
         )
@@ -152,6 +154,7 @@ class API(object):
                 'groupids',
                 'streamids',
                 'deployments',
+                'usermetadata',
             ],
             require_auth=True,
         )
@@ -211,7 +214,7 @@ class API(object):
 
     @property
     def streams(self):
-        """ :reference: https://data.sense-t.org.au/api-docs/#!/default/get_streams
+        """ :reference: https://senaps.io/api-docs/#!/default/get_streams
             :allowed_param: 'id,limit'
         """
         return bind_api(
@@ -232,6 +235,34 @@ class API(object):
                 'organisationid',
                 'locationid',
                 'usermetadatafield',
+                'usermetadatavalues',
+                'properties'
+            ],
+            payload_list=True,
+            require_auth=True,
+        )
+
+    @property
+    def locations(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/get_locations
+            :allowed_param: 'id,limit'
+        """
+        return bind_api(
+            api=self,
+            path='/locations',
+            payload_type='location',
+            allowed_param=['limit', 'id'],
+            query_only_param=[
+                'id',
+                'description'
+                'limit',
+                'skip',
+                'near',
+                'radius',
+                'expand',
+                'groupids',
+                'organisationid',
+                'usermetadatafield',
                 'usermetadatavalues'
             ],
             payload_list=True,
@@ -240,7 +271,7 @@ class API(object):
 
     @property
     def get_stream(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/get_streams_id
+        """ :reference: https://senaps.io/api-docs/#!/default/get_streams_id
             :allowed_param: 'id'
         """
         return bind_api(
@@ -254,7 +285,7 @@ class API(object):
 
     @property
     def create_stream(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/put_streams_id
+        """ :reference: https://senaps.io/api-docs/#!/default/put_streams_id
             :allowed_param: 'id', 'resulttype', 'organisationid', 'groupids', 'procedureid', 'samplePeriod',
             'reportingPeriod', 'streamMetadata', 'locationid'
         """
@@ -284,7 +315,7 @@ class API(object):
 
     @property
     def destroy_stream(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/delete_streams_id
+        """ :reference: https://senaps.io/api-docs/#!/default/delete_streams_id
             :allowed_param: 'id', 'cascade'
         """
         return bind_api(
@@ -304,7 +335,7 @@ class API(object):
     @property
     def create_location(self):
         """ :reference:
-        https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/put_location_id
+        https://senaps.io/api-docs/#!/default/put_location_id
             :allowed_param: 'id', 'description', 'organisationid', 'geoJson'
         """
         return bind_api(
@@ -325,7 +356,7 @@ class API(object):
 
     @property
     def get_location(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/get_location_id
+        """ :reference: https://senaps.io/api-docs/#!/default/get_location_id
             :allowed_param: 'id'
         """
         return bind_api(
@@ -339,7 +370,7 @@ class API(object):
 
     @property
     def destroy_location(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/delete_locations_id
+        """ :reference: https://senaps.io/api-docs/#!/default/delete_locations_id
             :allowed_param: 'id', 'cascade'
         """
         return bind_api(
@@ -356,7 +387,7 @@ class API(object):
 
     @property
     def create_observations(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/post_observations
+        """ :reference: https://senaps.io/api-docs/#!/default/post_observations
             :allowed_param: 'streamid', 'results'
         """
         return bind_api(
@@ -377,7 +408,7 @@ class API(object):
 
     @property
     def get_observations(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/get_observations
+        """ :reference: https://senaps.io/api-docs/#!/default/get_observations
             :allowed_param: 'streamid', 'start', 'end', 'time', 'si', 'ei',
             'bounds', 'media', 'limit', 'sort'
         """
@@ -406,7 +437,7 @@ class API(object):
 
     @property
     def destroy_observations(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/delete_observations
+        """ :reference: https://senaps.io/api-docs/#!/default/delete_observations
             :allowed_param: 'streamid'
         """
         return bind_api(
@@ -423,7 +454,7 @@ class API(object):
     @property
     def create_group(self):
         """ :reference:
-        https://sensor-cloud.io/api-docs/#!/default/put_groups_id
+        https://senaps.io/api-docs/#!/default/put_groups_id
             :allowed_param: 'id', 'name', 'organisationid', 'description', 'groupids'
         """
         return bind_api(
@@ -438,13 +469,14 @@ class API(object):
                 'organisationid',
                 'description',
                 'groupids',
+                'usermetadata'
             ],
             require_auth=True,
         )
 
     @property
     def get_groups(self):
-        """ :reference: https://sensor-cloud.io/api-docs/#!/default/get_groups
+        """ :reference: https://senaps.io/api-docs/#!/default/get_groups
             :allowed_param: 'id', 'organisationid', 'groupids', 'limit', 'skip', 'expand', 'recursive'
         """
         return bind_api(
@@ -471,7 +503,7 @@ class API(object):
 
     @property
     def destroy_group(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/delete_group
+        """ :reference: https://senaps.io/api-docs/#!/default/delete_group
             :allowed_param: 'id', 'cascade'
         """
         return bind_api(
@@ -488,7 +520,7 @@ class API(object):
 
     @property
     def get_group(self):
-        """ :reference: https://sensor-cloud.io/api-docs/#!/default/get_group
+        """ :reference: https://senaps.io/api-docs/#!/default/get_group
             :allowed_param: 'id', 'recursive'
         """
         return bind_api(

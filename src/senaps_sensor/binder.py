@@ -310,7 +310,7 @@ def bind_api(**config):
                     error_msg, api_error_code = \
                         self.parser.parse_error(resp.text)
                 except Exception as ex:
-                    error_msg = "SenseT error response: status code = %s" % resp.status_code
+                    error_msg = "Senaps error response: status code = %s" % resp.status_code
                     api_error_code = None
 
                 if is_rate_limit_error_message(error_msg):
