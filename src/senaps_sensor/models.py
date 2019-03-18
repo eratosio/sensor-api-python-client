@@ -672,6 +672,18 @@ class Location(Model):
 
         return result
 
+    @classmethod
+    def parse_list(cls, api, json_list):
+        if isinstance(json_list, list):
+            item_list = json_list
+        else:
+            item_list = json_list['_embedded']['locations']
+
+        results = ResultSet()
+        for obj in item_list:
+            results.append(cls.parse(api, obj))
+        return results
+
     def __getstate__(self, action=None):
         pickled = super(Location, self).__getstate__(action)
         pickled["groupids"] = [g.id for g in self.groups]

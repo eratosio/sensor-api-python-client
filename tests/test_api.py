@@ -335,6 +335,29 @@ class ApiTestCase(SensorApiTestCase):
         self.assertEqual(loc1, loc3)
 
 
+    def test_update_stream_location(self):
+
+        s = self.generate_scalar_stream()
+
+        self.api.create_stream(s)
+
+        retrieved_stream = self.api.get_stream(id=s.id)
+
+        l = self.generate_location()
+
+        self.api.create_location(l)
+
+        retrieved_stream.location = l
+
+        #update stream
+        self.api.update_stream(retrieved_stream)
+
+        updated_stream = self.api.get_stream(id=s.id)
+
+        self.assertEqual(updated_stream.location.id, l.id)
+
+        self.api.destroy_stream(id=s.id)
+
     def test_update_stream_with_results(self):
 
         s = self.generate_scalar_stream()
@@ -638,6 +661,33 @@ class ApiTestCase(SensorApiTestCase):
 
         return o, points
 
+    def generate_observations_with_annoations(self):
+
+        o = Observation()
+
+        dt = datetime.datetime(2016, 2, 15, 0, 0, 0)
+        dt_td = datetime.timedelta(minutes=15)
+
+        points = [
+            {'time': dt + (dt_td * 0), 'v': 1},
+            {'time': dt + (dt_td * 1), 'v': 2},
+            {'time': dt + (dt_td * 2), 'v': 3},
+        ]
+
+        for p in points:
+            item = UnivariateResult()
+            item.t = p.get('time')
+            item.v = {
+                'v': p.get('v'),
+                'a': {
+                    'key1': 'value1',
+                    'key2': 'value2'
+                }
+            }
+            o.results.append(item)
+
+        return o, points
+
 
     @tape.use_cassette('test_create_scalar_observations.json')
     def test_create_scalar_observations(self):
@@ -664,6 +714,72 @@ class ApiTestCase(SensorApiTestCase):
                     't':  points[2].get('time').strftime(dt_format),
                     'v': {
                         'v': points[2].get('v')
+                    }
+                },
+            ]
+        }
+        required_json = dumps(required_state, sort_keys=True)  # be explict with key order since dumps gives us a string
+
+        actual_state = o.to_state("create")
+        actual_json = o.to_json("create")
+
+        ### dict diff debugging
+        # from deepdiff import DeepDiff
+        # diff = DeepDiff(required_state, actual_state)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        print("creating stream %s" % s)
+        created_stream = self.api.create_stream(s)
+
+        self.assertEqual(created_stream.id, s.id)
+
+        created_observation = self.api.create_observations(o, streamid=s.id)
+
+        self.assertEqual(created_observation.get('message'), "Observations uploaded")
+        self.assertEqual(created_observation.get('status'), 201)
+
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
+
+    @tape.use_cassette('test_create_scalar_observations_with_annotations.json')
+    def test_create_scalar_observations_with_annotations(self):
+        s = self.generate_scalar_stream()
+
+        o, points = self.generate_observations_with_annoations()
+
+        dt_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+        required_state = {
+            'results': [
+                {
+                    't': points[0].get('time').strftime(dt_format),
+                    'v': {
+                        'v': points[0].get('v'),
+                        'a':{
+                            'key1': 'value1',
+                            'key2': 'value2'
+                        }
+                    }
+                },
+                {
+                    't': points[1].get('time').strftime(dt_format),
+                    'v': {
+                        'v': points[1].get('v'),
+                        'a': {
+                            'key1': 'value1',
+                            'key2': 'value2'
+                        }
+                    }
+                },
+                {
+                    't': points[2].get('time').strftime(dt_format),
+                    'v': {
+                        'v': points[2].get('v'),
+                        'a': {
+                            'key1': 'value1',
+                            'key2': 'value2'
+                        }
                     }
                 },
             ]
@@ -966,3 +1082,17 @@ class ApiTestCase(SensorApiTestCase):
         self.assertTrue((expected_time - 1) <= t <= (expected_time + 1),
                         'Timeout took %f, expected, %f' % (t, expected_time))
 
+    def test_get_locations(self):
+
+        locations = self.api.locations()
+
+        self.assertGreater(len(locations.ids()), 100)
+        self.assertIsNotNone(locations.ids()[0])
+
+    def test_get_locations_expanded_includes_coordinates(self):
+
+        locations = self.api.locations(expand=True, limit=10)
+
+        self.assertGreater(len(locations.ids()), 100)
+        self.assertIsNotNone(locations.ids()[0])
+        self.assertEquals(len(locations[0].geojson['coordinates']), 2)
