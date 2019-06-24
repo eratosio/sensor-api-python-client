@@ -193,6 +193,8 @@ class API(object):
             payload_type='platform',
             allowed_param=[
                 'id',
+            ],
+            query_only_param=[
                 'cascade',
             ],
             require_auth=True,
@@ -380,6 +382,8 @@ class API(object):
             payload_type='location',
             allowed_param=[
                 'id',
+            ],
+            query_only_param=[
                 'cascade',
             ],
             require_auth=True,
@@ -513,7 +517,9 @@ class API(object):
             payload_type='group',
             allowed_param=[
                 'id',
-		'cascade'
+            ],
+            query_only_param=[
+                'cascade',
             ],
             require_auth=True,
         )
