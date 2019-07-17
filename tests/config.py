@@ -29,7 +29,7 @@ import os
 import six
 from distutils.util import strtobool
 
-from senaps_sensor.auth import HTTPBasicAuth
+from senaps_sensor.auth import HTTPBasicAuth, HTTPKeyAuth
 
 if six.PY3:
     import unittest
@@ -38,6 +38,7 @@ else:
 
 username = os.environ.get('SENAPS_USERNAME', 'username')
 password = os.environ.get('SENAPS_PASSWORD', 'password')
+api_key = os.environ.get('SENAPS_APIKEY')
 host = os.environ.get('API_BASE', 'senaps.io')
 ssl_verify = bool(strtobool(os.environ.get('SSL_VERIFY', "True")))
 use_replay = bool(strtobool(os.environ.get('USE_REPLAY', "0")))
@@ -45,7 +46,8 @@ use_replay = bool(strtobool(os.environ.get('USE_REPLAY', "0")))
 
 tape = vcr.VCR(
     cassette_library_dir='cassettes',
-    filter_headers=['Authorization'],
+    filter_headers=['Authorization', 'apikey'],
+    filter_query_parameters=['apikey'],
     serializer='json',
     # Either use existing cassettes, or never use recordings:
     record_mode='none' if use_replay else 'all',
@@ -53,7 +55,11 @@ tape = vcr.VCR(
 
 class SensorApiTestCase(unittest.TestCase):
     def setUp(self):
-        self.auth = HTTPBasicAuth(username, password)
+        if api_key is None:
+            self.auth = HTTPBasicAuth(username, password)
+        else:
+            self.auth = HTTPKeyAuth(api_key)
+
         self.api = API(self.auth, host=host, verify=ssl_verify)
         self.api.retry_count = 0
         self.api.retry_delay = 5
