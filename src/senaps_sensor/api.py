@@ -32,7 +32,7 @@ from senaps_sensor.utils import list_to_csv
 class API(object):
     """Sense-T API"""
     def __init__(self, auth_handler=None,
-                 host='data.sense-t.org.au', cache=None, api_root='/api/sensor/v2',
+                 host='senaps.io', cache=None, api_root='/api/sensor/v2',
                  retry_count=0, retry_delay=0, retry_errors=None, timeout=60, parser=None,
                  compression=False, wait_on_rate_limit=False, connect_retries=3, read_retries=3,
                  backoff_factor=0.5, status_retries=3,
@@ -193,6 +193,8 @@ class API(object):
             payload_type='platform',
             allowed_param=[
                 'id',
+            ],
+            query_only_param=[
                 'cascade',
             ],
             require_auth=True,
@@ -380,6 +382,8 @@ class API(object):
             payload_type='location',
             allowed_param=[
                 'id',
+            ],
+            query_only_param=[
                 'cascade',
             ],
             require_auth=True,
@@ -513,7 +517,9 @@ class API(object):
             payload_type='group',
             allowed_param=[
                 'id',
-		'cascade'
+            ],
+            query_only_param=[
+                'cascade',
             ],
             require_auth=True,
         )

@@ -646,7 +646,7 @@ class Group(Model):
         if isinstance(json_list, list):
             item_list = json_list
         else:
-            item_list = json_list['_embedded']['groups']
+            item_list = json_list.get('_embedded', {}).get('groups', [])
 
         results = ResultSet()
         for obj in item_list:
