@@ -213,9 +213,9 @@ class ApiTestCase(SensorApiTestCase):
         location = self.api.get_location(id=loc.id)
         self.assertEqual(location.geojson['coordinates'][0], loc.geoJson['coordinates'][0])
 
-        self.api.destroy_platform(id=p.id)
-        self.api.destroy_location(id=loc.id)
-        self.api.destroy_stream(id=s.id)
+        self.api.destroy_platform(id=p.id, cascade=True)
+        self.api.destroy_location(id=loc.id, cascade=True)
+        self.api.destroy_stream(id=s.id, cascade=True)
 
     def test_update_platform(self):
         """
@@ -247,7 +247,7 @@ class ApiTestCase(SensorApiTestCase):
         created_platform = self.api.create_platform(p)
 
         # delete
-        self.api.destroy_platform(created_platform)
+        self.api.destroy_platform(created_platform, cascade=True)
 
         # verify
         with self.assertRaises(SenapsError):
@@ -356,7 +356,7 @@ class ApiTestCase(SensorApiTestCase):
 
         self.assertEqual(updated_stream.location.id, l.id)
 
-        self.api.destroy_stream(id=s.id)
+        self.api.destroy_stream(id=s.id, cascade=True)
 
     def test_update_stream_with_results(self):
 
@@ -1096,3 +1096,9 @@ class ApiTestCase(SensorApiTestCase):
         self.assertGreater(len(locations.ids()), 100)
         self.assertIsNotNone(locations.ids()[0])
         self.assertEquals(len(locations[0].geojson['coordinates']), 2)
+
+    @tape.use_cassette('test_search_with_no_results_returns_empty_list.json')
+    def test_search_with_no_results_returns_empty_list(self):
+        groups = self.api.get_groups(groupids='a_nonexistent_group')
+
+        self.assertEquals(len(groups), 0)
