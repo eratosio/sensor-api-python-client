@@ -112,6 +112,7 @@ def bind_api(**config):
             self.build_path()
 
             self.host = api.host
+            self.host_protocol = api.protocol
 
             # TODO: test and remove below.
             # Manually set Host header to fix an issue in python 2.5
@@ -204,7 +205,7 @@ def bind_api(**config):
 
             # Build the request URL
             url = self.api_root + self.path
-            full_url = 'https://' + self.host + url
+            full_url = ('%s://' % self.host_protocol) + self.host + url
 
             # Query the cache if one is available
             # and this request uses a GET method.
