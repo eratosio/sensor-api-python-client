@@ -24,8 +24,6 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import json
 import time
-import traceback
-import sys
 import datetime
 import uuid
 
@@ -33,15 +31,12 @@ from senaps_sensor.error import SenapsError
 from senaps_sensor.models import Deployment, Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, StreamMetaDataType, \
     InterpolationType, Observation, UnivariateResult, Location
 
-from senaps_sensor.api import API
-from senaps_sensor.auth import HTTPBasicAuth
 from senaps_sensor.const import VALID_PROTOCOLS
 
 from senaps_sensor.utils import SenseTEncoder
 from senaps_sensor.binder import bind_api
 
 from tests.config import *
-from pprint import pprint
 
 import six
 if six.PY3:
