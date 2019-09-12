@@ -1108,6 +1108,38 @@ class ApiTestCase(SensorApiTestCase):
 
         self.assertEquals(len(groups), 0)
 
+    @tape.use_cassette('test_get_permitted.json')
+    def test_get_permitted(self):
+        """
+        Params:
+        "permission"
+        "resourceid"
+        "organisationid"
+        "groupids"
+        ----
+        Request must provide:
+        permission and (resourceid or (organisationid && groupids))
+        """
+        # tests rely on exported vars, set some inputs based on those.
+        if host == 'senaps.io':
+            # no sandbox org in production server.
+            org_id = 'csiro'
+            groupids = 'sandbox'
+        else:
+            org_id = 'sandbox'
+            groupids = 'sandbox'
+        permitted = self.api.get_permitted(permission='.ReadStreamPermission',
+                                           organisationid=org_id,
+                                           groupids=groupids)
+
+        permitted_on_resource = self.api.get_permitted(permission='.ReadStreamPermission',
+                                                       resourceid='empty_scalar_stream')
+        self.assertTrue(permitted is not None)
+        self.assertTrue(hasattr(permitted, 'permitted'))
+
+        self.assertTrue(permitted_on_resource is not None)
+        self.assertTrue(hasattr(permitted, 'permitted'))
+
 
 class TestAPIConnectionProtocol(unittest.TestCase):
 
