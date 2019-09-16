@@ -27,7 +27,7 @@ from senaps_sensor.binder import bind_api
 from senaps_sensor.error import SenapsError
 from senaps_sensor.parsers import ModelParser, Parser
 from senaps_sensor.utils import list_to_csv
-
+from senaps_sensor.const import VALID_PROTOCOLS
 
 class API(object):
     """Sense-T API"""
@@ -36,11 +36,11 @@ class API(object):
                  retry_count=0, retry_delay=0, retry_errors=None, timeout=60, parser=None,
                  compression=False, wait_on_rate_limit=False, connect_retries=3, read_retries=3,
                  backoff_factor=0.5, status_retries=3,
-                 wait_on_rate_limit_notify=False, proxy='', verify=True):
+                 wait_on_rate_limit_notify=False, proxy='', verify=True, protocol='https'):
         """ Api instance Constructor
 
         :param auth_handler:
-        :param host:  url of the server of the rest api, default:'api.twitter.com'
+        :param host:  url of the server of the rest api, default:'senaps.io'
         :param cache: Cache to query if a GET method is used, default:None
         :param api_root: suffix of the api version, default:'/1.1'
         :param retry_count: number of allowed retries, default:0
@@ -52,10 +52,13 @@ class API(object):
         :param wait_on_rate_limit: If the api wait when it hits the rate limit, default:False
         :param wait_on_rate_limit_notify: If the api print a notification when the rate limit is hit, default:False
         :param proxy: Url to use as proxy during the HTTP request, default:''
-
+        :param protocol: specify connection protocol to use. https by default.
+        :param verify: Verify SSL certs if true. Will have no affect if protocol='http'
         :raise TypeError: If the given parser is not a ModelParser instance.
+        :raise ValueError: If the given protocol is not in the set 'http', 'https'
         """
         self.auth = auth_handler
+        self.protocol = protocol.lower()
         self.verify = verify
         self.host = host
         self.api_root = api_root
@@ -73,8 +76,12 @@ class API(object):
         self.wait_on_rate_limit_notify = wait_on_rate_limit_notify
         self.parser = parser or ModelParser()
         self.proxy = {}
+
+        if self.protocol not in VALID_PROTOCOLS:
+            raise ValueError('"protocol" argument must be in %s' % (','.join(VALID_PROTOCOLS)))
+
         if proxy:
-            self.proxy['https'] = proxy
+            self.proxy[self.protocol] = proxy
 
         parser_type = Parser
         if not isinstance(self.parser, parser_type):
@@ -538,4 +545,26 @@ class API(object):
             require_auth=True,
         )
 
-    
+    @property
+    def get_permitted(self):
+        """
+        Currently no public documentation for this item.
+        This endpoint is used to verify whether the current user is permitted to
+        access the specified resources.
+        :allowed_param: 'permission', 'resourceid', 'organisationid', 'groupids'
+        :return:
+        """
+        return bind_api(
+            api=self,
+            path='/permitted',
+            method='GET',
+            payload_type='permitted',
+            allowed_param=[],
+            query_only_param=[
+                'permission',
+                'resourceid',
+                'organisationid',
+                'groupids'
+            ],
+            require_auth=True
+        )

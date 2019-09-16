@@ -908,6 +908,29 @@ class User(Model):
     def groups(self):
         pass
 
+class Permitted(Model):
+
+    @classmethod
+    def parse(cls, api, json):
+        permitted = cls(api)
+        attrs = [
+            '_links',
+            '_embedded',
+        ]
+        setattr(permitted, '_json', json)
+        setattr(permitted, 'permitted', json['permitted'])
+        for k, v in json.items():
+            if k in attrs:
+                setattr(permitted, k, v)
+
+        return permitted
+
+    @property
+    def user(self):
+        if hasattr(self, '_embedded') and 'user' in self._embedded.keys():
+            return User.parse(self._api, self._embedded.get('user')[0])
+        return None
+
 
 class ModelFactory(object):
     """
@@ -926,5 +949,6 @@ class ModelFactory(object):
     procedure = Procedure
     observation = Observation
     aggregation = Aggregation
+    permitted = Permitted
 
     json = JSONModel

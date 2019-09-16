@@ -76,3 +76,24 @@ class HTTPKeyAuth(AuthBase):
     
     def apply_auth(self):
         return self
+
+
+class HTTPConsumerIDAuth(AuthBase):
+    """
+    Attaches an 'X-Consumer-Custom-ID' to the given Request object.
+
+    Useful only for internal use, as this method is not valid outside the Senaps firewall.
+    """
+
+    def __init__(self, username):
+        self.username = username
+
+    def __call__(self, r):
+        r.headers['X-Consumer-Custom-ID'] = self.username.lower()
+        return r
+
+    def get_username(self):
+        return self.username
+
+    def apply_auth(self):
+        return self
