@@ -49,6 +49,7 @@ class AuthTestCase(SensorApiTestCase):
         p = PreparedRequest()
         p.headers = CaseInsensitiveDict()
         r = self.api.auth(p)
+
         k = r.headers.keys()
         for key in k:
             if key == 'Authorization':

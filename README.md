@@ -1,25 +1,25 @@
-Sense-T Sensor Data Python client
+Senaps Sensor Data Python Client
 ==============================
 
-This project is a python client implementation for the [Sense-T Sensor Data API v2](https://data.sense-t.org.au/api/sensor/v2/api-docs/#/).
+This project is a python client implementation for the [Senaps Sensor API v2](https://senaps.io/api-docs/).
 
-Project home page: https://github.com/sense-t/sense-t-python-client
+Project home page: https://bitbucket.csiro.au/projects/SC/repos/sensor-api-python-client/browse
 
 Installation
 ------------
 
 Install from the master branch:
 
-    $ pip install -e git+https://github.com/sense-t/sense-t-python-client.git#egg=senset-data-portal
+    $ pip install -e git+https://bitbucket.csiro.au/scm/sc/sensor-api-python-client.git#egg=senaps_sensor
 
 Or install from a tag:
 
-    $ pip install -e git+https://github.com/sense-t/sense-t-python-client.git@v2.0.4#egg=senset-data-portal
+    $ pip install -e git+https://bitbucket.csiro.au/scm/sc/sensor-api-python-client.git#egg=sensor-api-python-client@v2.5.1#egg=senaps_sensor
 
 Documentation
 ------------
 
-todo
+TODO
 
 Roadmap
 ------------
@@ -30,10 +30,10 @@ Roadmap
 Development
 ------------
 
-Clone the project from github:
+Clone the project from bitbucket:
 
-    $ git clone https://github.com/sense-t/sense-t-python-client.git
-    $ cd senset-data-portal
+    $ git clone https://bitbucket.csiro.au/scm/sc/sensor-api-python-client.git
+    $ cd sensor-api-python-client
 
 Create a python virtual environment, then install the requirements as below:
 
@@ -44,7 +44,7 @@ Testing
 
 Run the test suite with:
 
-    $ (venv) nosetests -v tests.test_auth tests.test_api
+    $ (venv) nosetests -v tests.test_auth tests.test_api tests.test_internal_auth
 
 Or, use `tox` to run the setup.py package build and test suite for all python versions (ensure your environment variables for any API calls that hit the web are correct, see `tox.ini` passenv configuration):
 
@@ -52,4 +52,4 @@ Or, use `tox` to run the setup.py package build and test suite for all python ve
 
 #### Acknowledgements
 
-This project has been heavy derived from the Tweepy python twitter client project: https://github.com/tweepy/tweepy/ 
+This project has been heavily derived from the Tweepy python twitter client project: https://github.com/tweepy/tweepy/ 

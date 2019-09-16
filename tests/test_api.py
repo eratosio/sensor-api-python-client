@@ -24,8 +24,6 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import json
 import time
-import traceback
-import sys
 import datetime
 import uuid
 
@@ -33,11 +31,12 @@ from senaps_sensor.error import SenapsError
 from senaps_sensor.models import Deployment, Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, StreamMetaDataType, \
     InterpolationType, Observation, UnivariateResult, Location
 
+from senaps_sensor.const import VALID_PROTOCOLS
+
 from senaps_sensor.utils import SenseTEncoder
 from senaps_sensor.binder import bind_api
 
 from tests.config import *
-from pprint import pprint
 
 import six
 if six.PY3:
@@ -1089,6 +1088,7 @@ class ApiTestCase(SensorApiTestCase):
         self.assertGreater(len(locations.ids()), 100)
         self.assertIsNotNone(locations.ids()[0])
 
+    @unittest.skip('CPS-1027: expanded location queries will timeout right now.')
     def test_get_locations_expanded_includes_coordinates(self):
 
         locations = self.api.locations(expand=True, limit=10)
@@ -1102,3 +1102,48 @@ class ApiTestCase(SensorApiTestCase):
         groups = self.api.get_groups(groupids='a_nonexistent_group')
 
         self.assertEquals(len(groups), 0)
+
+    @tape.use_cassette('test_get_permitted.json')
+    def test_get_permitted(self):
+        """
+        Params:
+        "permission"
+        "resourceid"
+        "organisationid"
+        "groupids"
+        ----
+        Request must provide:
+        permission and (resourceid or (organisationid && groupids))
+        """
+        # tests rely on exported vars, set some inputs based on those.
+        if host == 'senaps.io':
+            # no sandbox org in production server.
+            org_id = 'csiro'
+            groupids = 'sandbox'
+        else:
+            org_id = 'sandbox'
+            groupids = 'sandbox'
+        permitted = self.api.get_permitted(permission='.ReadStreamPermission',
+                                           organisationid=org_id,
+                                           groupids=groupids)
+
+        permitted_on_resource = self.api.get_permitted(permission='.ReadStreamPermission',
+                                                       resourceid='empty_scalar_stream')
+        self.assertTrue(permitted is not None)
+        self.assertTrue(hasattr(permitted, 'permitted'))
+
+        self.assertTrue(permitted_on_resource is not None)
+        self.assertTrue(hasattr(permitted, 'permitted'))
+
+
+class TestAPIConnectionProtocol(unittest.TestCase):
+
+    def test_valid_protocols(self):
+        for protocol in VALID_PROTOCOLS:
+            auth = HTTPConsumerIDAuth('myfakeuser@domainname.com')
+            api = API(auth, protocol=protocol)
+
+    def test_invalid_protocol_will_raise(self):
+        auth = HTTPConsumerIDAuth('myfakeuser@domainname.com')
+        with self.assertRaises(ValueError):
+            API(auth, protocol='git')

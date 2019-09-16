@@ -1,7 +1,18 @@
+=== Senaps Sensor Data project contributors ===
+
+Chris Sharman
+Joe Pasanen
+Mac Coombe
+Peter Taylor
+John McCulloch
+Josh Riddell
+Dragan Marjanovic
+David Biggins
+Akram Hameed
+
 === Sense-T Data Portal project contributors ===
 
 Tom Randle (@Rundll)
-
 
 === Tweepy project contributors ===
 

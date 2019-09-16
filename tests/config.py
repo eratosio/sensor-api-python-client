@@ -29,7 +29,7 @@ import os
 import six
 from distutils.util import strtobool
 
-from senaps_sensor.auth import HTTPBasicAuth, HTTPKeyAuth
+from senaps_sensor.auth import HTTPBasicAuth, HTTPKeyAuth, HTTPConsumerIDAuth
 
 if six.PY3:
     import unittest
@@ -53,12 +53,22 @@ tape = vcr.VCR(
     record_mode='none' if use_replay else 'all',
 )
 
+
 class SensorApiTestCase(unittest.TestCase):
     def setUp(self):
         if api_key is None:
             self.auth = HTTPBasicAuth(username, password)
         else:
             self.auth = HTTPKeyAuth(api_key)
+
+        self.api = API(self.auth, host=host, verify=ssl_verify)
+        self.api.retry_count = 0
+        self.api.retry_delay = 5
+
+
+class SensorApiInternalTestCase(unittest.TestCase):
+    def setUp(self):
+        self.auth = HTTPConsumerIDAuth(username)
 
         self.api = API(self.auth, host=host, verify=ssl_verify)
         self.api.retry_count = 0
