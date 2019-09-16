@@ -545,4 +545,26 @@ class API(object):
             require_auth=True,
         )
 
-    
+    @property
+    def get_permitted(self):
+        """
+        Currently no public documentation for this item.
+        This endpoint is used to verify whether the current user is permitted to
+        access the specified resources.
+        :allowed_param: 'permission', 'resourceid', 'organisationid', 'groupids'
+        :return:
+        """
+        return bind_api(
+            api=self,
+            path='/permitted',
+            method='GET',
+            payload_type='permitted',
+            allowed_param=[],
+            query_only_param=[
+                'permission',
+                'resourceid',
+                'organisationid',
+                'groupids'
+            ],
+            require_auth=True
+        )
