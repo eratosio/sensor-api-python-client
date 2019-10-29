@@ -106,18 +106,169 @@ class API(object):
             allowed_param=[],
             require_auth=True,
             )
-        return self.get_user(userid=res()['_embedded']['user'][0]['id'])
-        
+        return self.get_user(id=res()['_embedded']['user'][0]['id'])
+
     @property
-    def get_user(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/get_users_userid
-            :allowed_param: 'userid'
+    def users(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/get_users
+            :allowed_param: 'id', 'roleids'
         """
         return bind_api(
             api=self,
-            path='/users/{userid}',
+            path='/users',
             payload_type='user',
-            allowed_param=['userid'],
+            payload_list=True,
+            query_only_param=[
+                'id',
+                'roleids'
+            ],
+            require_auth=True,
+        )
+
+    @property
+    def get_user(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/get_users_userid
+            :allowed_param: 'id'
+        """
+        return bind_api(
+            api=self,
+            path='/users/{id}',
+            payload_type='user',
+            allowed_param=['id'],
+            require_auth=True,
+        )
+
+    @property
+    def create_user(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/put_users_userid
+            :allowed_param: 'id', 'roleids'
+        """
+        return bind_api(
+            api=self,
+            method='PUT',
+            path='/users/{id}',
+            payload_type='user',
+            allowed_param=['id',
+                           'roleids'],
+            require_auth=True,
+        )
+
+    @property
+    def update_user(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/put_users_userid
+            :allowed_param: 'id', 'roleids'
+        """
+        return bind_api(
+            api=self,
+            method='PUT',
+            path='/users/{id}',
+            payload_type='user',
+            allowed_param=['id',
+                           'roleids'],
+            require_auth=True,
+        )
+
+    @property
+    def delete_user(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/delete_users_userid
+            :allowed_param: 'id'
+        """
+        return bind_api(
+            api=self,
+            method='DELETE',
+            path='/users/{id}',
+            payload_type='user',
+            allowed_param=['id'],
+            require_auth=True,
+        )
+
+    @property
+    def roles(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/get_roles
+            :allowed_param: 'id', 'name', 'organisationid', 'groupids', 'streamids'
+        """
+        return bind_api(
+            api=self,
+            path='/roles',
+            payload_type='role',
+            payload_list=True,
+            query_only_param = [
+                'id',
+                'type',
+                'permissions',
+                'organisationids',
+                'groupids',
+                'limit',
+                'skip',
+                'expand',
+                'recursive'
+            ],
+            require_auth=True,
+        )
+
+    @property
+    def get_role(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/get_roles_roleid
+            :allowed_param: 'id'
+        """
+        return bind_api(
+            api=self,
+            method='GET',
+            path='/roles/{id}',
+            payload_type='role',
+            allowed_param=['id'],
+            require_auth=True,
+        )
+
+    @property
+    def create_role(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/put_roles_roleid
+            :allowed_param: 'id'
+        """
+        return bind_api(
+            api=self,
+            method='PUT',
+            path='/roles/{id}',
+            payload_type='role',
+            allowed_param=['id',
+                           'permissions',
+                           'type',
+                           'organisationid',
+                           'groupid',
+                           'addressfilters'],
+            require_auth=True,
+        )
+
+    @property
+    def update_role(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/put_roles_roleid
+            :allowed_param: 'id'
+        """
+        return bind_api(
+            api=self,
+            method='PUT',
+            path='/roles/{id}',
+            payload_type='role',
+            allowed_param=['id',
+                           'permissions',
+                           'type',
+                           'organisationid',
+                           'groupid',
+                           'addressfilters'],
+            require_auth=True,
+        )
+
+    @property
+    def delete_role(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/delete_roles_roleid
+            :allowed_param: 'id'
+        """
+        return bind_api(
+            api=self,
+            method='DELETE',
+            path='/roles/{id}',
+            payload_type='json',
+            allowed_param=['id'],
             require_auth=True,
         )
 

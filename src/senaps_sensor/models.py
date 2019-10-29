@@ -853,6 +853,18 @@ class Role(Model):
         setattr(role, '_json', json)
         for k, v in json.items():
             setattr(role, k, v)
+
+        # look for org + groupid in _embedded data.
+        # nb: these aren't always present, need to be careful with check.
+        if '_embedded' not in json:
+            return role
+
+        # admin, org, and group type roles, each comes with different embedded data.
+        if 'group' in json['_embedded']:
+            setattr(role, 'groupid', json['_embedded']['group'][0]['id'])
+        if 'organisation' in json['_embedded']:
+            setattr(role, 'organisationid', json['_embedded']['organisation'][0]['id'])
+
         return role
 
     @classmethod
@@ -860,7 +872,7 @@ class Role(Model):
         if isinstance(json_list, list):
             item_list = json_list
         else:
-            item_list = json_list['roles']
+            item_list = json_list['_embedded']['roles']
 
         results = ResultSet()
         for obj in item_list:
@@ -878,6 +890,7 @@ class User(Model):
         user = cls(api)
         attrs = [
             'id',
+            'hidden',
             '_links',
             '_embedded',
         ]
@@ -892,7 +905,7 @@ class User(Model):
         if isinstance(json_list, list):
             item_list = json_list
         else:
-            item_list = json_list['users']
+            item_list = json_list['_embedded']['users']
 
         results = ResultSet()
         for obj in item_list:
