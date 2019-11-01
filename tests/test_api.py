@@ -1252,6 +1252,7 @@ class ApiTestCase(SensorApiTestCase):
         result = self.given_the_user(userid, roles=[role_id])
         self.api.delete_user(id=userid)
         self.api.delete_role(id=role_id)
+        self.assertEqual(role_id, result.roles[0].id, 'Expected the user to have the "%s" role' % role_id)
         self.assertEqual(result.id, userid, 'Expected to retrieve the same user back from Senaps.')
 
     def test_delete_user(self):
