@@ -133,7 +133,7 @@ class Model(object):
         return json.dumps(self.to_state(action), sort_keys=True, cls=SenseTEncoder, indent=indent)  # be explict with key order so unittest work.
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         """Parse a JSON object into a model instance."""
         raise NotImplementedError
 
@@ -150,11 +150,11 @@ class Model(object):
         return results
 
     @classmethod
-    def fix_parse_misspellings(cls, json):
+    def fix_parse_misspellings(cls, json_frag):
         for wrong, correct in cls.misspellings.items():
-            if wrong in json.keys():
-                json[correct] = json.get(wrong)
-                del json[wrong]
+            if wrong in json_frag.keys():
+                json_frag[correct] = json_frag.get(wrong)
+                del json_frag[wrong]
 
     def __repr__(self):
         state = ['%s=%s' % (k, repr(v)) for (k, v) in vars(self).items()]
@@ -169,8 +169,8 @@ class Model(object):
 
 class JSONModel(Model):
     @classmethod
-    def parse(cls, api, json):
-        return json
+    def parse(cls, api, json_frag):
+        return json_frag
 
 
 class Platform(Model):
@@ -207,10 +207,10 @@ class Platform(Model):
         return self.__getstate_create__(pickled)
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         platform = cls(api)
-        setattr(platform, '_json', json)
-        for k, v in json.items():
+        setattr(platform, '_json', json_frag)
+        for k, v in json_frag.items():
             if k == "_embedded":
                 for ek, ev in v.items():
                     if ek == "organisation":
@@ -274,10 +274,10 @@ class Platform(Model):
 
 class Organisation(Model):
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         organisation = cls(api)
-        setattr(organisation, '_json', json)
-        for k, v in json.items():
+        setattr(organisation, '_json', json_frag)
+        for k, v in json_frag.items():
             setattr(organisation, k, v)
         return organisation
 
@@ -410,12 +410,12 @@ class StreamMetaData(Model):
         return pickled
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         stream_meta_data = cls(api)
-        cls.fix_parse_misspellings(json)
+        cls.fix_parse_misspellings(json_frag)
 
-        setattr(stream_meta_data, '_json', json)
-        for k, v in json.items():
+        setattr(stream_meta_data, '_json', json_frag)
+        for k, v in json_frag.items():
             if k == "type":
                 setattr(stream_meta_data, "type", StreamMetaDataType(v))
             elif k == "_embedded":
@@ -441,7 +441,7 @@ class StreamMetaData(Model):
                         setattr(stream_meta_data, "length_unit", ev)
                     else:
                         setattr(stream_meta_data, ek, ev)
-                        print("parse: %s, %s" % (ek,ev))
+                        print("parse: %s, %s" % (ek, ev))
             else:
                 setattr(stream_meta_data, k, v)
         return stream_meta_data
@@ -558,10 +558,10 @@ class Stream(Model):
         return pickled
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         stream = cls(api)
-        setattr(stream, '_json', json)
-        for k, v in json.items():
+        setattr(stream, '_json', json_frag)
+        for k, v in json_frag.items():
             if k == "resulttype":
                 setattr(stream, "result_type", StreamResultType(v))
             elif k == "_embedded":
@@ -634,10 +634,10 @@ class Stream(Model):
 
 class Group(Model):
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         group = cls(api)
-        setattr(group, '_json', json)
-        for k, v in json.items():
+        setattr(group, '_json', json_frag)
+        for k, v in json_frag.items():
             setattr(group, k, v)
         return group
 
@@ -663,11 +663,11 @@ class Location(Model):
         self._groups = list()
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         result = cls(api)
 
-        setattr(result, '_json', json)
-        for k, v in json.items():
+        setattr(result, '_json', json_frag)
+        for k, v in json_frag.items():
             setattr(result, k, v)
 
         return result
@@ -726,10 +726,10 @@ class Observation(Model):
         return pickled
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         stream = cls(api)
-        setattr(stream, '_json', json)
-        for k, v in json.items():
+        setattr(stream, '_json', json_frag)
+        for k, v in json_frag.items():
             if k == "results":
                 setattr(stream, "results", UnivariateResult.parse_list(api, v))
             if k == "stream":
@@ -799,11 +799,11 @@ class UnivariateResult(JSONModel):
 
 class Deployment(Model):
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         role = cls(api)
-        setattr(role, '_json', json)
+        setattr(role, '_json', json_frag)
 
-        for k, v in json.items():
+        for k, v in json_frag.items():
             if k == "_embedded":
                 for ek, ev in v.items():
                     if ek == "location":
@@ -848,22 +848,22 @@ class Deployment(Model):
 class Role(Model):
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         role = cls(api)
-        setattr(role, '_json', json)
-        for k, v in json.items():
+        setattr(role, '_json', json_frag)
+        for k, v in json_frag.items():
             setattr(role, k, v)
 
         # look for org + groupid in _embedded data.
         # nb: these aren't always present, need to be careful with check.
-        if '_embedded' not in json:
+        if '_embedded' not in json_frag:
             return role
 
         # admin, org, and group type roles, each comes with different embedded data.
-        if 'group' in json['_embedded']:
-            setattr(role, 'groupid', json['_embedded']['group'][0]['id'])
-        if 'organisation' in json['_embedded']:
-            setattr(role, 'organisationid', json['_embedded']['organisation'][0]['id'])
+        if 'group' in json_frag['_embedded']:
+            setattr(role, 'groupid', json_frag['_embedded']['group'][0]['id'])
+        if 'organisation' in json_frag['_embedded']:
+            setattr(role, 'organisationid', json_frag['_embedded']['organisation'][0]['id'])
 
         return role
 
@@ -886,7 +886,7 @@ class Role(Model):
 class User(Model):
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         user = cls(api)
         attrs = [
             'id',
@@ -894,8 +894,8 @@ class User(Model):
             '_links',
             '_embedded',
         ]
-        setattr(user, '_json', json)
-        for k, v in json.items():
+        setattr(user, '_json', json_frag)
+        for k, v in json_frag.items():
             if k in attrs:
                 setattr(user, k, v)
         return user
@@ -924,15 +924,15 @@ class User(Model):
 class Permitted(Model):
 
     @classmethod
-    def parse(cls, api, json):
+    def parse(cls, api, json_frag):
         permitted = cls(api)
         attrs = [
             '_links',
             '_embedded',
         ]
-        setattr(permitted, '_json', json)
-        setattr(permitted, 'permitted', json['permitted'])
-        for k, v in json.items():
+        setattr(permitted, '_json', json_frag)
+        setattr(permitted, 'permitted', json_frag['permitted'])
+        for k, v in json_frag.items():
             if k in attrs:
                 setattr(permitted, k, v)
 
