@@ -1227,13 +1227,39 @@ class ApiTestCase(SensorApiTestCase):
         """
         Attempt to PUT a new user in Senaps. Note: this does NOT create the authentication front-end to a user.
         User management routines are present for internal use only,
-         as they require Administrative permissions not available
+        as they require Administrative permissions not available
         to organisation or group roles.
         """
         userid = 'a_probably_valid.name@emailhost.fake'
         result = self.given_the_user(userid)
         self.api.delete_user(id=userid)
         self.assertEqual(result.id, userid, 'Expected to retrieve the same user back from Senaps.')
+
+    def test_create_hidden_user(self):
+        """
+        PUT a new user into Senaps, marking them as hidden.
+        Note: this does NOT create the authentication front-end to a user.
+        User management routines are present for internal use only,
+        as they require Administrative permissions not available
+        to organisation or group roles.
+        """
+        userid = 'a_hidden_user@emailhost.fake'
+        result = self.given_the_user(userid, hidden=True)
+        self.api.delete_user(id=userid)
+        self.assertTrue(result.hidden, 'Expected %s to be a hidden user' % userid)
+
+    def test_create_user_no_hidden_argument(self):
+        """
+        PUT a new user into Senaps, but do not specify whether they should be hidden or not.
+        Note: this does NOT create the authentication front-end to a user.
+        User management routines are present for internal use only,
+        as they require Administrative permissions not available
+        to organisation or group roles.
+        """
+        userid = 'a_partially_defined_user@emailhost.fake'
+        result = self.api.create_user(id=userid)
+        self.api.delete_user(id=userid)
+        self.assertFalse(result.hidden, 'Expected %s to not be hidden.')
 
     def test_create_user_simple_group_role(self):
         """
@@ -1289,6 +1315,27 @@ class ApiTestCase(SensorApiTestCase):
         self.assertTrue(retrieved.roles[0].id == throwaway_role_id,
                         'Expected %s as a role on %s user' % (throwaway_role_id, userid))
 
+    def test_update_user_hidden(self):
+        """
+        Create and then update a user, marking them as hidden. Hidden users are used for machine accounts in Senaps.
+        User management routines are present for internal use only,
+        as they require Administrative permissions not available
+        to organisation or group roles.
+        """
+        userid = 'updateable_user@emailhost.fake'
+        throwaway_role_id = 'a_throwaway_group_role_id'
+        new_user = self.given_the_user(userid)  # helper routine always makes users with hidden = False.
+        self.given_the_group_role(throwaway_role_id,
+                                  'sandbox_group',
+                                  'sandbox',
+                                  ['.ReadGroupPermission'], None)
+        self.api.update_user(id=userid, hidden=True, roleids=[throwaway_role_id])
+        # verify it was updated.
+        retrieved = self.api.get_user(userid)
+        self.api.delete_user(id=userid)
+        self.assertTrue(retrieved.hidden,
+                        'Expected %s user to be hidden' % throwaway_role_id)
+
     def test_get_all_users(self):
         """
         Retrieve a list of all users in the system.
@@ -1324,7 +1371,7 @@ class ApiTestCase(SensorApiTestCase):
         self.assertTrue(len(users) == 1,
                         'Expected at least 1 user in your test Senaps instance (e.g. Invoker of this call)')
 
-    def given_the_user(self, userid, roles=None):
+    def given_the_user(self, userid, hidden=False, roles=None):
         """
         Invoke the User PUT verb on your chosen test server.
         :param userid: str: a valid userid in Senaps
@@ -1332,8 +1379,8 @@ class ApiTestCase(SensorApiTestCase):
         :return: User object, or raises a SenapsError if invalid permissions.
         """
         if roles is None:
-            return self.api.create_user(id=userid)
-        return self.api.create_user(id=userid, roleids=roles)
+            return self.api.create_user(id=userid, hidden=hidden)
+        return self.api.create_user(id=userid, hidden=hidden, roleids=roles)
 
     def given_the_group_role(self, roleid, groupid, organisationid, permissions, addressfilters=None):
         """

@@ -141,7 +141,7 @@ class API(object):
     @property
     def create_user(self):
         """ :reference: https://senaps.io/api-docs/#!/default/put_users_userid
-            :allowed_param: 'id', 'roleids'
+            :allowed_param: 'id', 'hidden', 'roleids'
         """
         return bind_api(
             api=self,
@@ -149,6 +149,7 @@ class API(object):
             path='/users/{id}',
             payload_type='user',
             allowed_param=['id',
+                           'hidden',
                            'roleids'],
             require_auth=True,
         )
@@ -156,7 +157,7 @@ class API(object):
     @property
     def update_user(self):
         """ :reference: https://senaps.io/api-docs/#!/default/put_users_userid
-            :allowed_param: 'id', 'roleids'
+            :allowed_param: 'id', 'hidden', 'roleids'
         """
         return bind_api(
             api=self,
@@ -164,6 +165,7 @@ class API(object):
             path='/users/{id}',
             payload_type='user',
             allowed_param=['id',
+                           'hidden',
                            'roleids'],
             require_auth=True,
         )
