@@ -203,7 +203,9 @@ class API(object):
                 'limit',
                 'skip',
                 'expand',
-                'recursive'
+                'recursive',
+                'usermetadatafield',
+                'usermetadatavalues'
             ],
             require_auth=True,
         )
@@ -232,12 +234,15 @@ class API(object):
             method='PUT',
             path='/roles/{id}',
             payload_type='role',
-            allowed_param=['id',
-                           'permissions',
-                           'type',
-                           'organisationid',
-                           'groupid',
-                           'addressfilters'],
+            allowed_param=[
+                'id',
+                'permissions',
+                'type',
+                'organisationid',
+                'groupid',
+                'addressfilters',
+                'usermetadata',
+            ],
             require_auth=True,
         )
 
@@ -251,12 +256,15 @@ class API(object):
             method='PUT',
             path='/roles/{id}',
             payload_type='role',
-            allowed_param=['id',
-                           'permissions',
-                           'type',
-                           'organisationid',
-                           'groupid',
-                           'addressfilters'],
+            allowed_param=[
+                'id',
+                'permissions',
+                'type',
+                'organisationid',
+                'groupid',
+                'addressfilters',
+                'usermetadata',
+            ],
             require_auth=True,
         )
 
@@ -291,7 +299,7 @@ class API(object):
                 "groupids",
                 "streamids",
                 'usermetadatafield',
-                'usermetadatavalues'
+                'usermetadatavalues',
             ],
             require_auth=True,
         )
@@ -337,6 +345,7 @@ class API(object):
                 'groupids',
                 'streamids',
                 'deployments',
+                'usermetadata',
             ],
             require_auth=True,
         )
@@ -425,7 +434,7 @@ class API(object):
                 'groupids',
                 'organisationid',
                 'usermetadatafield',
-                'usermetadatavalues'
+                'usermetadatavalues',
             ],
             payload_list=True,
             require_auth=True,
@@ -467,6 +476,7 @@ class API(object):
                 'samplePeriod',
                 'reportingPeriod',
                 'streamMetadata',
+                'usermetadata',
             ],
             require_auth=True,
         )
@@ -512,6 +522,7 @@ class API(object):
                 'description',
                 'geoJson',
                 'groupids',
+                'usermetadata',
             ],
             require_auth=True,
         )
@@ -633,7 +644,7 @@ class API(object):
                 'organisationid',
                 'description',
                 'groupids',
-                'usermetadata'
+                'usermetadata',
             ],
             require_auth=True,
         )
@@ -660,7 +671,7 @@ class API(object):
                 'expand',
                 'recursive',
                 'usermetadatafield',
-                'usermetadatavalues'
+                'usermetadatavalues',
             ],
             require_auth=True,
         )
