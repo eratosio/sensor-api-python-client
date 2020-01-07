@@ -134,8 +134,14 @@ class Model(object):
 
     @classmethod
     def parse(cls, api, json_frag):
-        """Parse a JSON object into a model instance."""
-        raise NotImplementedError
+        instance = cls(api)
+
+        try:
+            instance.usermetadata = json_frag['usermetadata']
+        except KeyError:
+            pass
+
+        return instance
 
     @classmethod
     def parse_list(cls, api, json_list):
@@ -208,7 +214,7 @@ class Platform(Model):
 
     @classmethod
     def parse(cls, api, json_frag):
-        platform = cls(api)
+        platform = super(Platform, cls).parse(api, json_frag)
         setattr(platform, '_json', json_frag)
         for k, v in json_frag.items():
             if k == "_embedded":
@@ -275,7 +281,7 @@ class Platform(Model):
 class Organisation(Model):
     @classmethod
     def parse(cls, api, json_frag):
-        organisation = cls(api)
+        organisation = super(Organisation, cls).parse(api, json_frag)
         setattr(organisation, '_json', json_frag)
         for k, v in json_frag.items():
             setattr(organisation, k, v)
@@ -411,7 +417,7 @@ class StreamMetaData(Model):
 
     @classmethod
     def parse(cls, api, json_frag):
-        stream_meta_data = cls(api)
+        stream_meta_data = super(StreamMetaData, cls).parse(api, json_frag)
         cls.fix_parse_misspellings(json_frag)
 
         setattr(stream_meta_data, '_json', json_frag)
@@ -559,7 +565,7 @@ class Stream(Model):
 
     @classmethod
     def parse(cls, api, json_frag):
-        stream = cls(api)
+        stream = super(Stream, cls).parse(api, json_frag)
         setattr(stream, '_json', json_frag)
         for k, v in json_frag.items():
             if k == "resulttype":
@@ -635,7 +641,7 @@ class Stream(Model):
 class Group(Model):
     @classmethod
     def parse(cls, api, json_frag):
-        group = cls(api)
+        group = super(Group, cls).parse(api, json_frag)
         setattr(group, '_json', json_frag)
         for k, v in json_frag.items():
             setattr(group, k, v)
@@ -664,13 +670,13 @@ class Location(Model):
 
     @classmethod
     def parse(cls, api, json_frag):
-        result = cls(api)
+        location = super(Location, cls).parse(api, json_frag)
 
-        setattr(result, '_json', json_frag)
+        setattr(location, '_json', json_frag)
         for k, v in json_frag.items():
-            setattr(result, k, v)
+            setattr(location, k, v)
 
-        return result
+        return location
 
     @classmethod
     def parse_list(cls, api, json_list):
@@ -727,17 +733,16 @@ class Observation(Model):
 
     @classmethod
     def parse(cls, api, json_frag):
-        stream = cls(api)
-        setattr(stream, '_json', json_frag)
+        observation = super(Observation, cls).parse(api, json_frag)
+        setattr(observation, '_json', json_frag)
         for k, v in json_frag.items():
             if k == "results":
-                setattr(stream, "results", UnivariateResult.parse_list(api, v))
+                setattr(observation, "results", UnivariateResult.parse_list(api, v))
             if k == "stream":
-                #TODO - is this a mistake? Should steam be stream?
-                setattr(stream, "steam", Stream.parse(api, v))
+                setattr(observation, "stream", Stream.parse(api, v))
             else:
-                setattr(stream, k, v)
-        return stream
+                setattr(observation, k, v)
+        return observation
 
     @classmethod
     def parse_list(cls, api, json_list):
@@ -800,18 +805,18 @@ class UnivariateResult(JSONModel):
 class Deployment(Model):
     @classmethod
     def parse(cls, api, json_frag):
-        role = cls(api)
-        setattr(role, '_json', json_frag)
+        deployment = super(Deployment, cls).parse(api, json_frag)
+        setattr(deployment, '_json', json_frag)
 
         for k, v in json_frag.items():
             if k == "_embedded":
                 for ek, ev in v.items():
                     if ek == "location":
-                        setattr(role, "_location", Location.parse(api, ev[0]))
+                        setattr(deployment, "_location", Location.parse(api, ev[0]))
             else:
-                setattr(role, k, v)
+                setattr(deployment, k, v)
 
-        return role
+        return deployment
 
     @classmethod
     def parse_list(cls, api, json_list):
@@ -849,7 +854,7 @@ class Role(Model):
 
     @classmethod
     def parse(cls, api, json_frag):
-        role = cls(api)
+        role = super(Role, cls).parse(api, json_frag)
         setattr(role, '_json', json_frag)
         for k, v in json_frag.items():
             setattr(role, k, v)
@@ -887,7 +892,7 @@ class User(Model):
 
     @classmethod
     def parse(cls, api, json_frag):
-        user = cls(api)
+        user = super(User, cls).parse(api, json_frag)
         attrs = [
             'id',
             'hidden',
@@ -925,7 +930,7 @@ class Permitted(Model):
 
     @classmethod
     def parse(cls, api, json_frag):
-        permitted = cls(api)
+        permitted = super(Permitted, cls).parse(api, json_frag)
         attrs = [
             '_links',
             '_embedded',

@@ -1371,6 +1371,17 @@ class ApiTestCase(SensorApiTestCase):
         self.assertTrue(len(users) == 1,
                         'Expected at least 1 user in your test Senaps instance (e.g. Invoker of this call)')
 
+    def test_round_tripping_group_user_metadata(self):
+        user_metadata = {'test': 'value'}
+
+        self.api.create_group(id='user_metadata_group', name='User metadata test group', organisationid='sandbox',
+                              usermetadata=user_metadata)
+
+        group = self.api.get_group('user_metadata_group')
+        self.api.destroy_group('user_metadata_group')
+
+        self.assertEqual(user_metadata, group['usermetadata'])
+
     def given_the_user(self, userid, hidden=False, roles=None):
         """
         Invoke the User PUT verb on your chosen test server.
