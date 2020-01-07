@@ -739,8 +739,7 @@ class Observation(Model):
             if k == "results":
                 setattr(observation, "results", UnivariateResult.parse_list(api, v))
             if k == "stream":
-                #TODO - is this a mistake? Should steam be stream?
-                setattr(observation, "steam", Stream.parse(api, v))
+                setattr(observation, "stream", Stream.parse(api, v))
             else:
                 setattr(observation, k, v)
         return observation
