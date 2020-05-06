@@ -3,10 +3,6 @@ import re
 import os
 import uuid
 from setuptools import setup, find_packages
-try: # for pip >= 10
-    from pip._internal.req import parse_requirements
-except ImportError: # for pip <= 9.0.3
-    from pip.req import parse_requirements
 
 src_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "src")
 
@@ -20,8 +16,6 @@ if mo:
 else:
     raise RuntimeError("Unable to find version string in %s." % (VERSION_FILE,))
 
-install_reqs = parse_requirements('requirements.txt', session=uuid.uuid1())
-reqs = [str(req.req) for req in install_reqs]
 
 AUTHOR = "CSIRO Data61"
 AUTHOR_EMAIL = "senaps@csiro.au"
@@ -37,7 +31,11 @@ setup(name="senaps_sensor",
       url="https://bitbucket.csiro.au/projects/SC/repos/sensor-api-python-client/browse",
       packages=find_packages(where='src', exclude=['tests']),
       package_dir={'': 'src'},
-      install_requires=reqs,
+      install_requires=[
+          'requests==2.22.0',
+          'six>=1.7.3',
+          'enum34',
+      ],
       keywords="senaps sensor api client library",
       classifiers=[
           'Development Status :: 4 - Beta',
@@ -50,9 +48,9 @@ setup(name="senaps_sensor",
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.4',
       ],
-      extras_require = {
-	      'pandas-observation-parser': [
-	          'pandas >= 0.18.1'
-	      ]
-	  },
+      extras_require={
+          'pandas-observation-parser': [
+              'pandas >= 0.18.1'
+          ]
+      },
       zip_safe=True)
