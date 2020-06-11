@@ -167,7 +167,8 @@ class API(object):
             payload_type='user',
             allowed_param=['id',
                            'hidden',
-                           'roleids'],
+                           'roleids',
+                           'eulaids'],
             require_auth=True,
         )
 
