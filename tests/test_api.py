@@ -1329,6 +1329,25 @@ class ApiTestCase(SensorApiTestCase):
         self.assertTrue(retrieved.roles[0].id == throwaway_role_id,
                         'Expected %s as a role on %s user' % (throwaway_role_id, userid))
 
+    @unittest.skip('Production server does not support this at the time of creating this test.')
+    def test_update_user_with_eula(self):
+        """
+        Create and then change a user's accepted eulas.
+        User management routines are present for internal use only,
+        as they require Administrative permissions not available
+        to organisation or group roles.
+        """
+        userid = 'updateable_user@emailhost.fake'
+        throwaway_role_id = 'a_throwaway_group_role_id'
+        self.given_the_user(userid)
+        self.api.update_user(id=userid, eulaids=['senaps-eula-v1'])
+        # verify it was updated.
+        retrieved = self.api.get_user(userid)
+        self.api.delete_user(id=userid)
+        self.assertEqual(1, len(retrieved.eulaids), 'Expected the total number of accepted eulas to be 1.')
+        self.assertEqual('senaps-eula-v1', retrieved.eualids[0],
+                        'Expected senaps-eula-v1 as accepted eula after update')
+
     def test_update_user_hidden(self):
         """
         Create and then update a user, marking them as hidden. Hidden users are used for machine accounts in Senaps.
