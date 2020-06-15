@@ -1260,7 +1260,7 @@ class ApiTestCase(SensorApiTestCase):
         userid = 'a_user_with_eula_user@emailhost.fake'
         result = self.given_the_user(userid, eulaids=['senaps-eula-v1'])
         self.api.delete_user(id=userid)
-        self.assertEqual('senaps-eula-v1', result.eulaids[0], 'Expected the user to have the senaps eula on the list of eulas')
+        self.assertEqual('senaps-eula-v1', result._json.get('eulaids')[0], 'Expected the user to have the senaps eula on the list of eulas')
 
     def test_create_user_no_hidden_argument(self):
         """
@@ -1344,8 +1344,8 @@ class ApiTestCase(SensorApiTestCase):
         # verify it was updated.
         retrieved = self.api.get_user(userid)
         self.api.delete_user(id=userid)
-        self.assertEqual(1, len(retrieved.eulaids), 'Expected the total number of accepted eulas to be 1.')
-        self.assertEqual('senaps-eula-v1', retrieved.eualids[0],
+        self.assertEqual(1, len(retrieved._json.get('eulaids')), 'Expected the total number of accepted eulas to be 1.')
+        self.assertEqual('senaps-eula-v1', retrieved._json.get('eulaids')[0],
                         'Expected senaps-eula-v1 as accepted eula after update')
 
     def test_update_user_hidden(self):
