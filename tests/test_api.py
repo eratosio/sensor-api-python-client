@@ -1248,6 +1248,20 @@ class ApiTestCase(SensorApiTestCase):
         self.api.delete_user(id=userid)
         self.assertTrue(result.hidden, 'Expected %s to be a hidden user' % userid)
 
+    @unittest.skip('Production server does not support this at the time of creating this test.')
+    def test_create_user_with_eula(self):
+        """
+        PUT a new user into Senaps, accepting a eula.
+        Note: this does NOT create the authentication front-end to a user.
+        User management routines are present for internal use only,
+        as they require Administrative permissions not available
+        to organisation or group roles.
+        """
+        userid = 'a_user_with_eula_user@emailhost.fake'
+        result = self.given_the_user(userid, eulaids=['senaps-eula-v1'])
+        self.api.delete_user(id=userid)
+        self.assertEqual('senaps-eula-v1', result._json.get('eulaids')[0], 'Expected the user to have the senaps eula on the list of eulas')
+
     def test_create_user_no_hidden_argument(self):
         """
         PUT a new user into Senaps, but do not specify whether they should be hidden or not.
@@ -1314,6 +1328,25 @@ class ApiTestCase(SensorApiTestCase):
         self.api.delete_user(id=userid)
         self.assertTrue(retrieved.roles[0].id == throwaway_role_id,
                         'Expected %s as a role on %s user' % (throwaway_role_id, userid))
+
+    @unittest.skip('Production server does not support this at the time of creating this test.')
+    def test_update_user_with_eula(self):
+        """
+        Create and then change a user's accepted eulas.
+        User management routines are present for internal use only,
+        as they require Administrative permissions not available
+        to organisation or group roles.
+        """
+        userid = 'updateable_user@emailhost.fake'
+        throwaway_role_id = 'a_throwaway_group_role_id'
+        self.given_the_user(userid)
+        self.api.update_user(id=userid, eulaids=['senaps-eula-v1'])
+        # verify it was updated.
+        retrieved = self.api.get_user(userid)
+        self.api.delete_user(id=userid)
+        self.assertEqual(1, len(retrieved._json.get('eulaids')), 'Expected the total number of accepted eulas to be 1.')
+        self.assertEqual('senaps-eula-v1', retrieved._json.get('eulaids')[0],
+                        'Expected senaps-eula-v1 as accepted eula after update')
 
     def test_update_user_hidden(self):
         """
@@ -1382,16 +1415,20 @@ class ApiTestCase(SensorApiTestCase):
 
         self.assertEqual(user_metadata, group['usermetadata'])
 
-    def given_the_user(self, userid, hidden=False, roles=None):
+    def given_the_user(self, userid, hidden=False, roles=None, eulaids=None):
         """
         Invoke the User PUT verb on your chosen test server.
         :param userid: str: a valid userid in Senaps
         :param roles: list: a list of Role IDs that should exist in Senaps.
         :return: User object, or raises a SenapsError if invalid permissions.
         """
-        if roles is None:
-            return self.api.create_user(id=userid, hidden=hidden)
-        return self.api.create_user(id=userid, hidden=hidden, roleids=roles)
+        arguments = dict(id=userid,
+                         hidden=hidden)
+        if roles is not None:
+            arguments['roleids'] = roles
+        if eulaids is not None:
+            arguments['eulaids'] = eulaids
+        return self.api.create_user(**arguments)
 
     def given_the_group_role(self, roleid, groupid, organisationid, permissions, addressfilters=None):
         """
