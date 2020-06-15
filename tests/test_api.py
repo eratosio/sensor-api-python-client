@@ -1422,9 +1422,13 @@ class ApiTestCase(SensorApiTestCase):
         :param roles: list: a list of Role IDs that should exist in Senaps.
         :return: User object, or raises a SenapsError if invalid permissions.
         """
-        if roles is None:
-            return self.api.create_user(id=userid, hidden=hidden, eulaids=eulaids)
-        return self.api.create_user(id=userid, hidden=hidden, roleids=roles)
+        arguments = dict(id=userid,
+                         hidden=hidden)
+        if roles is not None:
+            arguments['roleids'] = roles
+        if eulaids is not None:
+            arguments['eulaids'] = eulaids
+        return self.api.create_user(**arguments)
 
     def given_the_group_role(self, roleid, groupid, organisationid, permissions, addressfilters=None):
         """
