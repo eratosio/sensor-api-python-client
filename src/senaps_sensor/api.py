@@ -302,6 +302,8 @@ class API(object):
                 "streamids",
                 'usermetadatafield',
                 'usermetadatavalues',
+                'expand',
+                'recursive',
             ],
             require_auth=True,
         )
