@@ -589,8 +589,14 @@ class Stream(Model):
     def parse_list(cls, api, json_list):
         if isinstance(json_list, list):
             item_list = json_list
-        else:
+        elif ('_embedded' in json_list
+              and 'streams' in json_list['_embedded']):
             item_list = json_list['_embedded']['streams']
+        elif ('count' in json_list
+              and json_list['count'] == 0):
+            item_list = {}
+        else:
+            raise SenapsError('Unable to parse list: [%s]' % ', '.join(map(str, json_list)))
 
         results = ResultSet()
         for obj in item_list:
