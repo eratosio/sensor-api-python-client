@@ -1084,6 +1084,14 @@ class ApiTestCase(SensorApiTestCase):
         self.assertGreater(len(locations.ids()), 100)
         self.assertIsNotNone(locations.ids()[0])
 
+    def test_get_expanded_locations(self):
+        locations = self.api.locations(id='integration-test-location-csiro-sandy-bay', expand=True)
+
+        self.assertEqual(len(locations.ids()), 1)
+        self.assertEqual(locations[0].groups[0].id, 'integration_test')
+        self.assertEqual(len(locations[0].organisations), 1)
+        self.assertIsNotNone(locations.ids()[0])
+
     @unittest.skip('CPS-1027: expanded location queries will timeout right now.')
     def test_get_locations_expanded_includes_coordinates(self):
 
