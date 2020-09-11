@@ -67,6 +67,7 @@ class InterpolationType(enum.Enum):
 
 class ResultSet(list):
     """A list like object that holds results from a Twitter API query."""
+
     def __init__(self, max_id=None, since_id=None):
         super(ResultSet, self).__init__()
         self._max_id = max_id
@@ -93,7 +94,6 @@ class ResultSet(list):
 
 
 class Model(object):
-
     misspellings = {
         # key: wrong, value: correct
         'cummulative': 'cumulative',
@@ -130,7 +130,8 @@ class Model(object):
         return state
 
     def to_json(self, action=None, indent=None):
-        return json.dumps(self.to_state(action), sort_keys=True, cls=SenseTEncoder, indent=indent)  # be explict with key order so unittest work.
+        return json.dumps(self.to_state(action), sort_keys=True, cls=SenseTEncoder,
+                          indent=indent)  # be explict with key order so unittest work.
 
     @classmethod
     def parse(cls, api, json_frag):
@@ -533,6 +534,7 @@ class StreamMetaData(Model):
     def length_unit(self, value):
         self._length_unit = value
 
+
 class Stream(Model):
     def __init__(self, api=None):
         super(Stream, self).__init__(api=api)
@@ -680,7 +682,14 @@ class Location(Model):
 
         setattr(location, '_json', json_frag)
         for k, v in json_frag.items():
-            setattr(location, k, v)
+            if k == "_embedded":
+                for ek, ev in v.items():
+                    if ek == "organisation":
+                        setattr(location, "organisations", Organisation.parse_list(api, ev))
+                    elif ek == "groups":
+                        setattr(location, "groups", Group.parse_list(api, ev))
+            else:
+                setattr(location, k, v)
 
         return location
 
@@ -688,6 +697,8 @@ class Location(Model):
     def parse_list(cls, api, json_list):
         if isinstance(json_list, list):
             item_list = json_list
+        elif "_embedded" not in json_list:
+            item_list = []
         else:
             item_list = json_list['_embedded']['locations']
 
@@ -718,6 +729,7 @@ class Location(Model):
     @groups.setter
     def groups(self, value):
         self._groups = value
+
 
 class Procedure(Model):
     pass
@@ -761,14 +773,14 @@ class Observation(Model):
         for obj in item_list:
             results.append(cls.parse(api, obj))
         return results
-    
+
     @classmethod
     def from_dataframe(cls, dataframe):
         result = {}
-         
+
         for timestamp, series in dataframe.iterrows():
             timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-            
+
             for series_id, value in series.iteritems():
                 observation = UnivariateResult(t=timestamp, v=value)
                 result.setdefault(series_id, Observation()).results.append(observation)
@@ -789,6 +801,7 @@ class Observation(Model):
     @stream.setter
     def stream(self, value):
         self._stream = value
+
 
 class Aggregation(Model):
     pass
@@ -840,7 +853,7 @@ class Deployment(Model):
         pickled = super(Deployment, self).__getstate__(action)
 
         if self.location:
-           pickled["locationid"] = self.location.id
+            pickled["locationid"] = self.location.id
 
         return pickled
 
@@ -931,6 +944,7 @@ class User(Model):
 
     def groups(self):
         pass
+
 
 class Permitted(Model):
 
