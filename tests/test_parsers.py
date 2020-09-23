@@ -43,9 +43,13 @@ import six
 if six.PY3:
     import unittest
     from unittest.case import skip
+    UTC_INFO = datetime.timezone.utc
 else:
     import unittest2 as unittest
     from unittest2.case import skip
+    import pytz
+    # no such thing as datetime.timezone.utc in python 2
+    UTC_INFO = pytz.utc
 
 
 def dumps(*args, **kwargs):
@@ -98,9 +102,9 @@ class ParsersTestCase(SensorApiTestCase):
 
         o = Observation()
         if basetimestamp:
-            dt = basetimestamp.replace(tzinfo=datetime.timezone.utc)
+            dt = basetimestamp.replace(tzinfo=UTC_INFO)
         else:
-            dt = datetime.datetime(2016, 2, 15, 0, 0, 0, tzinfo=datetime.timezone.utc)
+            dt = datetime.datetime(2016, 2, 15, 0, 0, 0, tzinfo=UTC_INFO)
 
         if deltat:
             dt_td = deltat
@@ -159,14 +163,14 @@ class ParsersTestCase(SensorApiTestCase):
     @tape.use_cassette('test_pandas_get_observations_two_scalar_stream.json')
     def test_pandas_get_observations_two_scalar_stream(self):
         s1 = self.generate_scalar_stream()
-        o1, points1, df1 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 0, 0, tzinfo=datetime.timezone.utc),
+        o1, points1, df1 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 0, 0, tzinfo=UTC_INFO),
                                                       deltat = datetime.timedelta(minutes=15),
                                                       obs=[1.0,2.0,3.0])
         mapnames = {'v': s1.id}
         df1 = df1.rename(columns=mapnames)
 
         s2 = self.generate_scalar_stream()
-        o2, points2, df2 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 15, 0, tzinfo=datetime.timezone.utc),
+        o2, points2, df2 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 15, 0, tzinfo=UTC_INFO),
                                                       deltat = datetime.timedelta(minutes=15),
                                                       obs=[1.5,2.5,3.5])
         mapnames = {'v': s2.id}
@@ -230,14 +234,14 @@ class ParsersTestCase(SensorApiTestCase):
     @tape.use_cassette('test_pandas_get_observations_two_vector_stream.json')
     def test_pandas_get_observations_two_vector_stream(self):
         s1 = self.generate_vector_stream(3)
-        o1, points1, df1 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 0, 0, tzinfo=datetime.timezone.utc),
+        o1, points1, df1 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 0, 0, tzinfo=UTC_INFO),
                                                       deltat = datetime.timedelta(minutes=15),
                                                       obs=[[1.0,2.0,3.0],[1.1,2.1,3.1],[1.2,2.2,3.2]])
         mapnames = {'v[%d]'%i : s1.id+'[%d]'%i for i in range(3)}
         df1 = df1.rename(columns=mapnames)
 
         s2 = self.generate_vector_stream(3)
-        o2, points2, df2 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 15, 0, tzinfo=datetime.timezone.utc),
+        o2, points2, df2 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 15, 0, tzinfo=UTC_INFO),
                                                       deltat = datetime.timedelta(minutes=15),
                                                       obs=[[-1.0,-2.0,-3.0],[-1.1,-2.1,-3.1],[-1.2,-2.2,-3.2]])
         mapnames = {'v[%d]'%i : s2.id+'[%d]'%i for i in range(3)}
@@ -277,14 +281,14 @@ class ParsersTestCase(SensorApiTestCase):
     @tape.use_cassette('test_pandas_get_observations_scalar_vector_stream.json')
     def test_pandas_get_observations_scalar_vector_stream(self):
         s1 = self.generate_vector_stream(3)
-        o1, points1, df1 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 0, 0, tzinfo=datetime.timezone.utc),
+        o1, points1, df1 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 0, 0, tzinfo=UTC_INFO),
                                                       deltat = datetime.timedelta(minutes=15),
                                                       obs=[[1.0,2.0,3.0],[1.1,2.1,3.1],[1.2,2.2,3.2]])
         mapnames = {'v[%d]'%i : s1.id+'[%d]'%i for i in range(3)}
         df1 = df1.rename(columns=mapnames)
 
         s2 = self.generate_scalar_stream()
-        o2, points2, df2 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 15, 0, tzinfo=datetime.timezone.utc),
+        o2, points2, df2 = self.generate_observations(basetimestamp = datetime.datetime(2016, 2, 15, 0, 15, 0, tzinfo=UTC_INFO),
                                                       deltat = datetime.timedelta(minutes=15),
                                                       obs=[1.5,2.5,3.5])
         mapnames = {'v': s2.id}
