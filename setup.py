@@ -50,7 +50,7 @@ setup(name="senaps_sensor",
       ],
       extras_require={
           'pandas-observation-parser': [
-              'pandas >= 0.18.1'
+              'pandas>=0.18.1,<=0.25.3'
           ]
       },
       zip_safe=True)

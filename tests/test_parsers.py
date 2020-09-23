@@ -139,10 +139,10 @@ class ParsersTestCase(SensorApiTestCase):
 
         mapnames = {'v': s.id}
         expected_df = df.rename(columns=mapnames)
-        print('expceted dataframe')
+        print('expected dataframe')
         print(expected_df)
 
-        print('creating stream and observations %s' % s)
+        print('creating stream and observations %s' % s.id)
         self.api.create_stream(s)
         self.api.create_observations(o, streamid=s.id)
 
@@ -174,16 +174,16 @@ class ParsersTestCase(SensorApiTestCase):
 
         expected_df1 = pd.merge(df1, df2, how='outer', left_index=True, right_index=True)
         expected_df2 = pd.merge(df2, df1, how='outer', left_index=True, right_index=True)
-        print('expceted dataframe1')
+        print('expected dataframe1')
         print(expected_df1)
-        print('expceted dataframe2')
+        print('expected dataframe2')
         print(expected_df2)
 
-        print('creating stream and observations %s' % s1)
+        print('creating stream and observations %s' % s1.id)
         self.api.create_stream(s1)
         self.api.create_observations(o1, streamid=s1.id)
 
-        print('creating stream and observations %s' % s2)
+        print('creating stream and observations %s' % s2.id)
         created_stream = self.api.create_stream(s2)
         created_observations = self.api.create_observations(o2, streamid=s2.id)
 
@@ -210,10 +210,10 @@ class ParsersTestCase(SensorApiTestCase):
 
         mapnames = {'v[%d]'%i : s.id+'[%d]'%i for i in range(3)}
         expected_df = df.rename(columns=mapnames)
-        print('expceted dataframe')
+        print('expected dataframe')
         print(expected_df)
 
-        print('creating stream and observations %s' % s)
+        print('creating stream and observations %s' % s.id)
         self.api.create_stream(s)
         self.api.create_observations(o, streamid=s.id)
 
@@ -245,16 +245,16 @@ class ParsersTestCase(SensorApiTestCase):
 
         expected_df1 = pd.merge(df1, df2, how='outer', left_index=True, right_index=True)
         expected_df2 = pd.merge(df2, df1, how='outer', left_index=True, right_index=True)
-        print('expceted dataframe1')
+        print('expected dataframe1')
         print(expected_df1)
-        print('expceted dataframe2')
+        print('expected dataframe2')
         print(expected_df2)
 
-        print('creating stream and observations %s' % s1)
+        print('creating stream and observations %s' % s1.id)
         self.api.create_stream(s1)
         self.api.create_observations(o1, streamid=s1.id)
 
-        print('creating stream and observations %s' % s2)
+        print('creating stream and observations %s' % s2.id)
         self.api.create_stream(s2)
         self.api.create_observations(o2, streamid=s2.id)
 
@@ -292,16 +292,16 @@ class ParsersTestCase(SensorApiTestCase):
 
         expected_df1 = pd.merge(df1, df2, how='outer', left_index=True, right_index=True)
         expected_df2 = pd.merge(df2, df1, how='outer', left_index=True, right_index=True)
-        print('expceted dataframe1')
+        print('expected dataframe1')
         print(expected_df1)
-        print('expceted dataframe2')
+        print('expected dataframe2')
         print(expected_df2)
 
-        print('creating stream and observations %s' % s1)
+        print('creating stream and observations %s' % s1.id)
         self.api.create_stream(s1)
         self.api.create_observations(o1, streamid=s1.id)
 
-        print('creating stream and observations %s' % s2)
+        print('creating stream and observations %s' % s2.id)
         self.api.create_stream(s2)
         self.api.create_observations(o2, streamid=s2.id)
 
