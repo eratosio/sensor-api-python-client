@@ -44,12 +44,14 @@ if six.PY3:
     import unittest
     from unittest.case import skip
     UTC_INFO = datetime.timezone.utc
+    CHECK_INFERRED_TYPES = True
 else:
     import unittest2 as unittest
     from unittest2.case import skip
     import pytz
     # no such thing as datetime.timezone.utc in python 2
     UTC_INFO = pytz.utc
+    CHECK_INFERRED_TYPES = False
 
 
 def dumps(*args, **kwargs):
@@ -317,8 +319,8 @@ class ParsersTestCase(SensorApiTestCase):
         retrieived_observations2 = self.api.get_observations(streamid='%s,%s' % (s2.id,s1.id), media='csv', parser=CSVparser)
         print(retrieived_observations2)
 
-        assert_frame_equal(expected_df1, retrieived_observations1)
-        assert_frame_equal(expected_df2, retrieived_observations2)
+        assert_frame_equal(expected_df1, retrieived_observations1,check_column_type=CHECK_INFERRED_TYPES)
+        assert_frame_equal(expected_df2, retrieived_observations2,check_column_type=CHECK_INFERRED_TYPES)
 
         self.api.destroy_observations(streamid=s1.id)
         self.api.destroy_stream(id=s1.id)
