@@ -25,6 +25,7 @@ THE SOFTWARE.
 from __future__ import print_function, unicode_literals, absolute_import
 
 import six
+import re
 
 from senaps_sensor.models import ModelFactory
 from senaps_sensor.utils import import_simplejson
@@ -147,10 +148,9 @@ class PandasObservationParser(Parser):
         
         # Skip header information.
         stream_ids = method.query_params['streamid'].split(',') # NOTE: this WILL break if stream IDs contain commas (need to properly parse as CSV).
-        column_headers = frozenset(['timestamp'] + stream_ids)
         lines = payload.splitlines()
         for i, row in enumerate(lines):
-            if set(s.strip() for s in row.split(',')) == column_headers:
+            if 'timestamp' == row.split(',')[0]:
                 break
         
         # Parse CSV payload.
@@ -159,7 +159,12 @@ class PandasObservationParser(Parser):
         # SensorCloud returns columns in random (alphabetic?) order - reorder to
         # match the order the stream IDs were originally given in.
         if len(stream_ids) > 1:
-            df = df[stream_ids]
+            #cater for vectors which have multiple headers streamid[0], streamid[1]...
+            df_headers = list(df)
+            full_id_list=[]
+            for id in stream_ids:
+                full_id_list.extend([col for col in df_headers if id == re.sub("[\[].*?[\]]", "", col)])
+            df = df[full_id_list]
         
         return df
     

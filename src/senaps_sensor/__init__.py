@@ -14,7 +14,7 @@ Senaps data platform sensor API client library
 from __future__ import absolute_import, unicode_literals, print_function
 from .api import API
 
-__version__ = '2.10.0'
+__version__ = '2.11.0'
 __author__ = 'CSIRO Data61'
 __license__ = 'MIT'
 
