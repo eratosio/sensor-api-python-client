@@ -89,7 +89,7 @@ class HTTPConsumerIDAuth(AuthBase):
         self.username = username
 
     def __call__(self, r):
-        r.headers['X-Consumer-Custom-ID'] = self.username.lower()
+        r.headers['X-Consumer-Custom-ID'] = self.username
         return r
 
     def get_username(self):
