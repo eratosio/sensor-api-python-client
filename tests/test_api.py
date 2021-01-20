@@ -1084,6 +1084,11 @@ class ApiTestCase(SensorApiTestCase):
         self.assertGreater(len(locations.ids()), 100)
         self.assertIsNotNone(locations.ids()[0])
 
+    def test_get_limited_locations(self):
+        locations = self.api.locations(limit=1)
+
+        self.assertEqual(len(locations.ids()), 1)
+
     def test_get_expanded_locations(self):
         locations = self.api.locations(id='integration-test-location-csiro-sandy-bay', expand=True)
 
