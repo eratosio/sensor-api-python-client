@@ -29,8 +29,10 @@ from senaps_sensor.parsers import ModelParser, Parser
 from senaps_sensor.utils import list_to_csv
 from senaps_sensor.const import VALID_PROTOCOLS
 
+
 class API(object):
     """Sense-T API"""
+
     def __init__(self, auth_handler=None,
                  host='senaps.io', cache=None, api_root='/api/sensor/v2',
                  retry_count=0, retry_delay=0, retry_errors=None, timeout=60, parser=None,
@@ -92,7 +94,7 @@ class API(object):
                     actual=type(self.parser)
                 )
             )
-    
+
     @property
     def me(self):
         """ Get the authenticated user using root api call
@@ -105,7 +107,7 @@ class API(object):
             payload_type='json',
             allowed_param=[],
             require_auth=True,
-            )
+        )
         return self.get_user(id=res()['_embedded']['user'][0]['id'])
 
     @property
@@ -196,7 +198,7 @@ class API(object):
             path='/roles',
             payload_type='role',
             payload_list=True,
-            query_only_param = [
+            query_only_param=[
                 'id',
                 'type',
                 'permissions',
@@ -294,12 +296,12 @@ class API(object):
             path='/platforms',
             payload_type='platform',
             payload_list=True,
-            query_only_param = [
-                "id",
-                "name",
-                "organisationid",
-                "groupids",
-                "streamids",
+            query_only_param=[
+                'id',
+                'name',
+                'organisationid',
+                'groupids',
+                'streamids',
                 'usermetadatafield',
                 'usermetadatavalues',
                 'expand',
@@ -426,10 +428,10 @@ class API(object):
             api=self,
             path='/locations',
             payload_type='location',
-            allowed_param=['limit', 'id'],
+            allowed_param=['id'],
             query_only_param=[
                 'id',
-                'description'
+                'description',
                 'limit',
                 'skip',
                 'near',
@@ -612,7 +614,6 @@ class API(object):
             ],
             require_auth=True,
         )
-
 
     @property
     def destroy_observations(self):
