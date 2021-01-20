@@ -34,7 +34,7 @@ setup(name="senaps_sensor",
       install_requires=[
           'requests==2.22.0',
           'six>=1.7.3',
-          'enum34',
+          'enum34; python_version < "3.4.0"',
       ],
       keywords="senaps sensor api client library",
       classifiers=[
