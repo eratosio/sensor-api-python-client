@@ -859,7 +859,8 @@ class Deployment(Model):
 
     @property
     def location(self):
-        return self._location
+        if hasattr(self,'_location'):
+            return self._location
 
     @location.setter
     def location(self, value):
