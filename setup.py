@@ -32,7 +32,7 @@ setup(name="senaps_sensor",
       packages=find_packages(where='src', exclude=['tests']),
       package_dir={'': 'src'},
       install_requires=[
-          'requests==2.22.0',
+          'requests==2.25.1',
           'six>=1.7.3',
           'enum34; python_version < "3.4.0"',
       ],
