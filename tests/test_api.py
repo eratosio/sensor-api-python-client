@@ -77,7 +77,8 @@ class ApiTestCase(SensorApiTestCase):
 
         d = Deployment()
         d.name = 'Deployment 1'
-        d.location = location
+        if location:
+            d.location = location
         d.validTime = {}
 
         p = Platform()
@@ -227,6 +228,22 @@ class ApiTestCase(SensorApiTestCase):
         loc = self.generate_location()
         p = self.generate_platform(location=loc)
         self.api.create_location(loc)
+        created_platform = self.api.create_platform(p)
+
+        # update, by appending id to name attr
+        created_platform.name += 'UPDATED'
+        updated_platform = self.api.update_platform(created_platform)
+
+        # verify
+        self.assertEqual(updated_platform.name, created_platform.name)
+
+    def test_update_platform_deployment_locationless(self):
+        """
+        Platform update test, no clean ups
+        :return: None
+        """
+        # create
+        p = self.generate_platform(location=None)
         created_platform = self.api.create_platform(p)
 
         # update, by appending id to name attr
