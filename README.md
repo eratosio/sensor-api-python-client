@@ -14,7 +14,7 @@ Install from the master branch:
 
 Or install from a tag:
 
-    $ pip install -e git+https://bitbucket.csiro.au/scm/sc/sensor-api-python-client.git#egg=sensor-api-python-client@v2.5.1#egg=senaps_sensor
+    $ pip install -e git+https://bitbucket.csiro.au/scm/sc/sensor-api-python-client.git@v2.13.0#egg=senaps_sensor
 
 Documentation
 ------------
