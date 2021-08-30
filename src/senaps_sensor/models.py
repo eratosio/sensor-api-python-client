@@ -804,8 +804,55 @@ class Observation(Model):
 
 
 class Aggregation(Model):
-    pass
+    def __init__(self, api=None):
+        super(Aggregation, self).__init__(api=api)
+        self._results = list()
+        self._stream = None
 
+    def __getstate__(self, action=None):
+        pickled = super(Aggregation, self).__getstate__(action)
+
+        pickled["results"] = [r.to_state(action) for r in self.results] if self.results else []
+        if self.stream:
+            pickled["streamid"] = self.stream.to_state(action).get("id")
+        return pickled
+
+    @classmethod
+    def parse(cls, api, json_frag):
+        aggregation = super(Aggregation, cls).parse(api, json_frag)
+        setattr(aggregation, '_json', json_frag)
+        for k, v in json_frag.items():
+            if k == "results":
+                setattr(aggregation, "results", UnivariateResult.parse_list(api, v))
+            if k == "stream":
+                setattr(aggregation, "stream", Stream.parse(api, v))
+            else:
+                setattr(aggregation, k, v)
+        return aggregation
+
+    @classmethod
+    def parse_list(cls, api, json_list):
+        if isinstance(json_list, list):
+            item_list = json_list
+        else:
+            item_list = json_list['aggregations']
+
+        results = ResultSet()
+        for obj in item_list:
+            results.append(cls.parse(api, obj))
+        return results
+
+    @classmethod
+    def from_dataframe(cls, dataframe):
+        result = {}
+
+        for timestamp, series in dataframe.iterrows():
+            timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+            for series_id, value in series.iteritems():
+                aggregation = UnivariateResult(t=timestamp, v=value)
+                result.setdefault(series_id, Observation()).results.append(aggregation)
+        return result
 
 class UnivariateResult(JSONModel):
     def __init__(self, api=None, t=None, v=None):

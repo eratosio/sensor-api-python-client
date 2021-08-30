@@ -567,6 +567,32 @@ class API(object):
         )
 
     @property
+    def get_aggregation(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/get_aggregation
+            :allowed_param: 'streamid', 'start', 'end', 'si', 'ei',
+            'limit', 'aggperiod', 'count'
+        """
+        return bind_api(
+            api=self,
+            path='/aggregation',
+            method='GET',
+            payload_type='json',
+            allowed_param=[
+            ],
+            query_only_param=[
+                'streamid',
+                'start',
+                'end',
+                'si',
+                'ei',
+                'limit',
+                'aggperiod',
+                'count',
+            ],
+            require_auth=True,
+        )
+
+    @property
     def create_observations(self):
         """ :reference: https://senaps.io/api-docs/#!/default/post_observations
             :allowed_param: 'streamid', 'results'
