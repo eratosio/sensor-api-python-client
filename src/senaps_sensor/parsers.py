@@ -165,6 +165,8 @@ class PandasObservationParser(Parser):
             sid = method.query_params['streamid']
             # rename to make it look like an Observation query
             df = df.rename(columns={'t': 'timestamp', 'v.avg': sid+'.avg', 'v.min': sid+'.min', 'v.max': sid+'.max', 'v.count': sid+'.count'})
+            df['timestamp'] = self.pandas.to_datetime(df['timestamp'])
+            df.set_index('timestamp')
 
         # Senaps returns columns in random (alphabetic?) order - reorder to
         # match the order the stream IDs were originally given in.
