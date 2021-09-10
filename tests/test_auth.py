@@ -33,7 +33,8 @@ else:
 class AuthTestCase(SensorApiTestCase):
     @tape.use_cassette('test_credentials_configured.json')
     def test_credentials_configured(self):
-        assert self.api.me.id == username
+        self.assertEqual(username, self.api.me.id,
+                         "Expected user and actual user don't match.")
 
     @tape.use_cassette('test_roles.json')
     def test_roles(self):
