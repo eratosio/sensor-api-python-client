@@ -161,7 +161,12 @@ class PandasObservationParser(Parser):
         else:
             # Parse json payload from Aggregation query.
             data = self.json_lib.loads(payload)
-            df = self.pandas.json_normalize(data['results'])
+            if (self.pandas.__version__,) < ('1.0',):
+                df = self.pandas.io.json.json_normalize(data['results'])
+                # reorder columns
+                df = df[['t', 'v.avg', 'v.min', 'v.max', 'v.count']]
+            else:
+                df = self.pandas.json_normalize(data['results'])
             sid = method.query_params['streamid']
             # rename to make it look like an Observation query
             df = df.rename(columns={'t': 'timestamp', 'v.avg': sid+'.avg', 'v.min': sid+'.min', 'v.max': sid+'.max', 'v.count': sid+'.count'})

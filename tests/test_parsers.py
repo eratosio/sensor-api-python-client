@@ -331,7 +331,9 @@ class ParsersTestCase(SensorApiTestCase):
         s = self.generate_scalar_stream()
         o, points, df = self.generate_observations(obs=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0])
 
-        expected_data = [[pd.to_datetime('2016-02-15 00:00:00+00:00'), 2.5, 1.0, 4.0, 4], [pd.to_datetime('2016-02-15 01:00:00+00:00'), 6.5, 5.0, 8.0, 4], [pd.to_datetime('2016-02-15 02:00:00+00:00'), 10.0, 9.0, 11.0, 3]]
+        expected_data = [[pd.to_datetime('2016-02-15 00:00:00+00:00'), 2.5, 1.0, 4.0, 4],
+                         [pd.to_datetime('2016-02-15 01:00:00+00:00'), 6.5, 5.0, 8.0, 4],
+                         [pd.to_datetime('2016-02-15 02:00:00+00:00'), 10.0, 9.0, 11.0, 3]]
         expected_columns = ['timestamp',s.id+'.avg', s.id+'.min', s.id+'.max', s.id+'.count']
         expected_df = pd.DataFrame(expected_data, columns=expected_columns)
         print('expected dataframe')
