@@ -161,6 +161,21 @@ class ApiTestCase(SensorApiTestCase):
 
         return s
 
+    def test_ensure_data_exists_in_senaps(self):
+        # The following group, location must exist for future tests to pass
+        # but we still assume the organisation integration_test exists
+        test_group = self.api.create_group(id='integration_test',
+                              name='Integration Test Group',
+                              organisationid='integration_test')
+        self.assertEqual(test_group.get('id'), 'integration_test')
+
+        test_location = self.api.create_location(id='integration_test',
+                                 organisationid='integration_test',
+                                 description='Integration Test Group',
+                                 geoJson={'type': 'Point', 'coordinates': [147.0, -42.0]},
+                                 groupids=['integration_test'])
+        self.assertEqual(test_location.get('id'), 'integration_test')
+
     @tape.use_cassette('test_create_platform.json')
     def test_create_platform(self):
         """
