@@ -143,29 +143,46 @@ class PandasObservationParser(Parser):
     def parse(self, method, payload):
         # Validate media type.
         media_type = method.query_params.get('media', None)
-        if media_type != 'csv':
-            raise SenapsError('PandasObservationParser requires CSV media type (media type "{}" is not supported).'.format(media_type))
-        
-        # Skip header information.
-        stream_ids = method.query_params['streamid'].split(',') # NOTE: this WILL break if stream IDs contain commas (need to properly parse as CSV).
-        lines = payload.splitlines()
-        for i, row in enumerate(lines):
-            if 'timestamp' == row.split(',')[0]:
-                break
-        
-        # Parse CSV payload.
-        df = self.pandas.read_csv(StringIO('\n'.join(lines[i:])), parse_dates=True, index_col='timestamp')
-        
-        # SensorCloud returns columns in random (alphabetic?) order - reorder to
+        stream_ids = method.query_params['streamid'].split(',')  # NOTE: this WILL break if stream IDs contain commas (need to properly parse as CSV).
+        aggperiod = method.query_params.get('aggperiod', None)
+        if aggperiod is None:
+            if media_type != 'csv':
+                raise SenapsError('Observation query with PandasObservationParser requires CSV media type (media type "{}" is not supported).'.format(media_type))
+            else:
+                # Skip header information.
+                lines = payload.splitlines()
+                for i, row in enumerate(lines):
+                    if 'timestamp' == row.split(',')[0]:
+                        break
+
+                # Parse CSV payload.
+                df = self.pandas.read_csv(StringIO('\n'.join(lines[i:])), parse_dates=True, index_col='timestamp')
+
+        else:
+            # Parse json payload from Aggregation query.
+            data = self.json_lib.loads(payload)
+            if (self.pandas.__version__,) < ('1.0',):
+                df = self.pandas.io.json.json_normalize(data['results'])
+                # reorder columns
+                df = df[['t', 'v.avg', 'v.min', 'v.max', 'v.count']]
+            else:
+                df = self.pandas.json_normalize(data['results'])
+            sid = method.query_params['streamid']
+            # rename to make it look like an Observation query
+            df = df.rename(columns={'t': 'timestamp', 'v.avg': sid+'.avg', 'v.min': sid+'.min', 'v.max': sid+'.max', 'v.count': sid+'.count'})
+            df['timestamp'] = self.pandas.to_datetime(df['timestamp'])
+            df.set_index('timestamp')
+
+        # Senaps returns columns in random (alphabetic?) order - reorder to
         # match the order the stream IDs were originally given in.
         if len(stream_ids) > 1:
-            #cater for vectors which have multiple headers streamid[0], streamid[1]...
+            # cater for vectors which have multiple headers streamid[0], streamid[1]...
             df_headers = list(df)
-            full_id_list=[]
+            full_id_list = []
             for id in stream_ids:
                 full_id_list.extend([col for col in df_headers if id == re.sub("[\[].*?[\]]", "", col)])
             df = df[full_id_list]
-        
+
         return df
     
     def parse_error(self, payload):

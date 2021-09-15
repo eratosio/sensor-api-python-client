@@ -25,6 +25,6 @@ class TestInternalAuth(SensorApiInternalTestCase):
         self.assertIn(expected_header,
                       r.headers.keys(),
                       'Did not find %s in headers, auth must be broken' % expected_header)
-        self.assertEqual(username.lower(),
+        self.assertEqual(username,
                          r.headers['X-Consumer-Custom-ID'],
                          'Header not populated with username correctly.')

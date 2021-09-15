@@ -326,3 +326,29 @@ class ParsersTestCase(SensorApiTestCase):
         self.api.destroy_stream(id=s1.id)
         self.api.destroy_observations(streamid=s2.id)
         self.api.destroy_stream(id=s2.id)
+
+    def test_pandas_get_aggregation_scalar_stream(self):
+        s = self.generate_scalar_stream()
+        o, points, df = self.generate_observations(obs=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0])
+
+        expected_data = [[pd.to_datetime('2016-02-15 00:00:00+00:00'), 2.5, 1.0, 4.0, 4],
+                         [pd.to_datetime('2016-02-15 01:00:00+00:00'), 6.5, 5.0, 8.0, 4],
+                         [pd.to_datetime('2016-02-15 02:00:00+00:00'), 10.0, 9.0, 11.0, 3]]
+        expected_columns = ['timestamp',s.id+'.avg', s.id+'.min', s.id+'.max', s.id+'.count']
+        expected_df = pd.DataFrame(expected_data, columns=expected_columns)
+        print('expected dataframe')
+        print(expected_df)
+
+        print('creating stream and observations %s' % s.id)
+        self.api.create_stream(s)
+        self.api.create_observations(o, streamid=s.id)
+
+        print('getting observations')
+        CSVparser = PandasObservationParser()
+        retrieved_observations = self.api.get_aggregation(streamid=s.id, parser=CSVparser, aggperiod=1000*60*60)
+        print(retrieved_observations)
+
+        assert_frame_equal(expected_df, retrieved_observations)
+
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)

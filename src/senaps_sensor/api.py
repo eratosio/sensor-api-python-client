@@ -31,7 +31,7 @@ from senaps_sensor.const import VALID_PROTOCOLS
 
 
 class API(object):
-    """Sense-T API"""
+    """Senaps API"""
 
     def __init__(self, auth_handler=None,
                  host='senaps.io', cache=None, api_root='/api/sensor/v2',
@@ -98,7 +98,7 @@ class API(object):
     @property
     def me(self):
         """ Get the authenticated user using root api call
-            :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/
+            :reference: https://senaps.io/api-docs/#/default/get_
             :allowed_param: 
         """
         res = bind_api(
@@ -288,7 +288,7 @@ class API(object):
 
     @property
     def platforms(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/platforms
+        """ :reference: https://senaps.io/api-docs/#/default/platforms
             :allowed_param: 'id', 'name', 'organisationid', 'groupids', 'streamids'
         """
         return bind_api(
@@ -312,7 +312,7 @@ class API(object):
 
     @property
     def create_platform(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/put_platforms_id
+        """ :reference: https://senaps.io/api-docs/#/default/put_platforms_id
             :allowed_param: 'id', 'name', 'organisationid', 'groupids', 'streamids', 'deployments'
         """
         return bind_api(
@@ -335,7 +335,7 @@ class API(object):
 
     @property
     def update_platform(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/put_platforms_id
+        """ :reference: https://senaps.io/api-docs/#/default/put_platforms_id
             :allowed_param: 'id', 'name', 'organisationid', 'groupids', 'streamids', 'deployments',
         """
         return bind_api(
@@ -358,7 +358,7 @@ class API(object):
 
     @property
     def destroy_platform(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/delete_platforms_id
+        """ :reference: https://senaps.io/api-docs/#/default/delete_platforms_id
             :allowed_param: 'id', 'cascade'
         """
         return bind_api(
@@ -377,7 +377,7 @@ class API(object):
 
     @property
     def get_platform(self):
-        """ :reference: https://data.sense-t.org.au/api/sensor/v2/api-docs/#!/default/get_platform_id
+        """ :reference: https://senaps.io/api-docs/#/default/get_platform_id
             :allowed_param: 'id'
         """
         return bind_api(
@@ -512,8 +512,7 @@ class API(object):
 
     @property
     def create_location(self):
-        """ :reference:
-        https://senaps.io/api-docs/#!/default/put_location_id
+        """ :reference: https://senaps.io/api-docs/#!/default/put_location_id
             :allowed_param: 'id', 'description', 'organisationid', 'geoJson'
         """
         return bind_api(
@@ -562,6 +561,32 @@ class API(object):
             ],
             query_only_param=[
                 'cascade',
+            ],
+            require_auth=True,
+        )
+
+    @property
+    def get_aggregation(self):
+        """ :reference: https://senaps.io/api-docs/#!/default/get_aggregation
+            :allowed_param: 'streamid', 'start', 'end', 'si', 'ei',
+            'limit', 'aggperiod', 'count'
+        """
+        return bind_api(
+            api=self,
+            path='/aggregation',
+            method='GET',
+            payload_type='json',
+            allowed_param=[
+            ],
+            query_only_param=[
+                'streamid',
+                'start',
+                'end',
+                'si',
+                'ei',
+                'limit',
+                'aggperiod',
+                'count',
             ],
             require_auth=True,
         )

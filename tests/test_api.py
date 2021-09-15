@@ -161,6 +161,21 @@ class ApiTestCase(SensorApiTestCase):
 
         return s
 
+    def test_ensure_data_exists_in_senaps(self):
+        # The following group, location must exist for future tests to pass
+        # but we still assume the organisation integration_test exists
+        test_group = self.api.create_group(id='integration_test',
+                              name='Integration Test Group',
+                              organisationid='integration_test')
+        self.assertEqual(test_group.get('id'), 'integration_test')
+
+        test_location = self.api.create_location(id='integration_test',
+                                 organisationid='integration_test',
+                                 description='Integration Test Group',
+                                 geoJson={'type': 'Point', 'coordinates': [147.0, -42.0]},
+                                 groupids=['integration_test'])
+        self.assertEqual(test_location.get('id'), 'integration_test')
+
     @tape.use_cassette('test_create_platform.json')
     def test_create_platform(self):
         """
@@ -1061,6 +1076,8 @@ class ApiTestCase(SensorApiTestCase):
 
         # Calculate expected time to fail
         expected_time = 16
+		# Tolerance was 1 but there is now a lot more variation
+        expected_time_tolerance = 5
 
         t0 = time.time()
 
@@ -1091,7 +1108,7 @@ class ApiTestCase(SensorApiTestCase):
 
         t = time.time() - t0
         print('Connect timeout took', t, 'seconds')
-        self.assertTrue((expected_time - 1) <= t <= (expected_time + 1),
+        self.assertTrue((expected_time - expected_time_tolerance) <= t <= (expected_time + expected_time_tolerance),
                         'Timeout took %f, expected, %f' % (t, expected_time))
 
     def test_get_locations(self):
@@ -1107,7 +1124,7 @@ class ApiTestCase(SensorApiTestCase):
         self.assertEqual(len(locations.ids()), 1)
 
     def test_get_expanded_locations(self):
-        locations = self.api.locations(id='integration-test-location-csiro-sandy-bay', expand=True)
+        locations = self.api.locations(id='integration_test', expand=True)
 
         self.assertEqual(len(locations.ids()), 1)
         self.assertEqual(locations[0].groups[0].id, 'integration_test')
@@ -1115,7 +1132,7 @@ class ApiTestCase(SensorApiTestCase):
         self.assertIsNotNone(locations.ids()[0])
 
     def test_get_location_by_id(self):
-        test_loc_id = 'integration-test-location-csiro-sandy-bay'
+        test_loc_id = 'integration_test'
         location = self.api.get_location(id=test_loc_id)
 
         self.assertEqual(test_loc_id, location.id)

@@ -44,7 +44,7 @@ Testing
 
 Run the test suite with:
 
-    $ (venv) nosetests -v tests.test_auth tests.test_api tests.test_internal_auth
+    $ (venv) nosetests -v tests.test_auth tests.test_api tests.test_internal_auth tests.test_parsers
 
 Or, use `tox` to run the setup.py package build and test suite for all python versions (ensure your environment variables for any API calls that hit the web are correct, see `tox.ini` passenv configuration):
 
