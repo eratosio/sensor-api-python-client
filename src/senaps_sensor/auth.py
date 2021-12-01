@@ -33,9 +33,6 @@ class AuthBase(object):
     def get_username(self):
         raise NotImplementedError('Auth get_username() must be implemented.')
 
-    def apply_auth(self):
-        raise NotImplementedError('Auth apply_auth() must be implemented.')
-
 
 class HTTPBasicAuth(AuthBase):
     """Attaches HTTP Basic Authentication to the given Request object."""
@@ -50,9 +47,6 @@ class HTTPBasicAuth(AuthBase):
 
     def get_username(self):
         return self.username
-
-    def apply_auth(self):
-        return self
 
 
 class HTTPKeyAuth(AuthBase):
@@ -73,9 +67,6 @@ class HTTPKeyAuth(AuthBase):
     def __call__(self, r):
         r.headers[self.header] = self.key
         return r
-    
-    def apply_auth(self):
-        return self
 
 
 class HTTPConsumerIDAuth(AuthBase):
@@ -94,6 +85,3 @@ class HTTPConsumerIDAuth(AuthBase):
 
     def get_username(self):
         return self.username
-
-    def apply_auth(self):
-        return self

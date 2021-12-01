@@ -247,10 +247,6 @@ def bind_api(**config):
                 #             print("Rate limit reached. Sleeping for: " + str(sleep_time))
                 #         time.sleep(sleep_time + 5)  # sleep for few extra sec
 
-                # Apply authentication
-                if self.api.auth:
-                    auth = self.api.auth.apply_auth()
-
                 # Request compression if configured
                 if self.api.compression:
                     self.session.headers['Accept-encoding'] = 'gzip'
@@ -264,7 +260,7 @@ def bind_api(**config):
                                                     json=self.json_data,
                                                     params=self.query_params,
                                                     timeout=self.api.timeout,
-                                                    auth=auth,
+                                                    auth=self.api.auth,
                                                     proxies=self.api.proxy)
                     else:
                         resp = self.session.request(self.method,
@@ -272,7 +268,7 @@ def bind_api(**config):
                                                     data=self.post_data,
                                                     params=self.query_params,
                                                     timeout=self.api.timeout,
-                                                    auth=auth,
+                                                    auth=self.api.auth,
                                                     proxies=self.api.proxy)
                 except Exception as e:
                     raise SenapsError('Failed to send request: %s' % e)
