@@ -39,7 +39,7 @@ class StreamResultType(enum.Enum):
     geolocation = "geolocationvalue"
     vector = "vectorvalue"
     image = "imagevalue"
-
+    document = "documentvalue"
 
 class StreamMetaDataType(enum.Enum):
     scalar = ".ScalarStreamMetaData"
@@ -47,7 +47,7 @@ class StreamMetaDataType(enum.Enum):
     vector = ".VectorStreamMetaData"
     regularly_binned_vector = ".RegularlyBinnedVectorStreamMetaData"
     image = ".ImageStreamMetaData"
-
+    document = ".DocumentStreamMetaData"
 
 class InterpolationType(enum.Enum):
     continuous = 'http://www.opengis.net/def/waterml/2.0/interpolationType/Continuous'
@@ -63,7 +63,6 @@ class InterpolationType(enum.Enum):
     min_succeeding = 'http://www.opengis.net/def/waterml/2.0/interpolationType/MinSucc'
     max_succeeding = 'http://www.opengis.net/def/waterml/2.0/interpolationType/MaxSucc'
     const_succeeding = 'http://www.opengis.net/def/waterml/2.0/interpolationType/ConstSucc'
-
 
 class ResultSet(list):
     """A list like object that holds results from a Twitter API query."""

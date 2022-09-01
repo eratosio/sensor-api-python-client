@@ -134,6 +134,13 @@ class ApiTestCase(SensorApiTestCase):
         s = self._generate_stream(StreamResultType.vector, sm, stream_id)
         return s
 
+    def generate_document_stream(self, stream_id=None):
+        sm = StreamMetaData()
+        sm.type = StreamMetaDataType.document
+        sm.mimetype = 'application/json'
+        s = self._generate_stream(StreamResultType.document, sm, stream_id)
+        return s
+
     def generate_group(self, id):
 
         g = Group()
@@ -542,6 +549,43 @@ class ApiTestCase(SensorApiTestCase):
         self.assertEqual(actual_json, required_json)
 
         self.api.destroy_stream(id=s.id)
+
+    @tape.use_cassette('test_create_document_stream.json')
+    def test_create_document_stream(self):
+        s = self.generate_document_stream()
+
+        required_state = {
+            "id": s.id,
+            "resulttype": "documentvalue",
+            "organisationid": s.organisations[0].id,
+            "reportingPeriod": 'P1D',
+            "samplePeriod": 'PT10S',
+            "streamMetadata": {
+                "type": ".DocumentStreamMetaData",
+                "mimetype": "application/json"
+            }
+        }
+        required_json = dumps(required_state, sort_keys=True)  # be explict with key order since dumps gives us a string
+
+        actual_state = s.to_state("create")
+        actual_json = s.to_json("create")
+
+        # dict diff
+        # from deepdiff import DeepDiff
+        # diff = DeepDiff(required_state, actual_state)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        created_stream = self.api.create_stream(s)
+
+        self.assertEqual(s.id, created_stream.id)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        self.api.destroy_stream(id=s.id)
+
 
     @tape.use_cassette('test_create_image_stream.json')
     def test_create_image_stream(self):
