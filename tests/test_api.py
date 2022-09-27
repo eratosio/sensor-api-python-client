@@ -29,7 +29,7 @@ import uuid
 
 from senaps_sensor.error import SenapsError
 from senaps_sensor.models import Deployment, Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, \
-    StreamMetaDataType, \
+    StreamMetaDataType, StreamMetaDataMimeType, \
     InterpolationType, Observation, UnivariateResult, Location, User, Role
 
 from senaps_sensor.const import VALID_PROTOCOLS
@@ -137,7 +137,7 @@ class ApiTestCase(SensorApiTestCase):
     def generate_document_stream(self, stream_id=None):
         sm = StreamMetaData()
         sm.type = StreamMetaDataType.document
-        sm.mimetype = 'application/json'
+        sm.mimetype = StreamMetaDataMimeType.json
         s = self._generate_stream(StreamResultType.document, sm, stream_id)
         return s
 

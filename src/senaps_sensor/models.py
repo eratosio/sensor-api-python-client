@@ -49,6 +49,10 @@ class StreamMetaDataType(enum.Enum):
     image = ".ImageStreamMetaData"
     document = ".DocumentStreamMetaData"
 
+class StreamMetaDataMimeType(enum.Enum):
+    json = "application/json"
+    text = "text/plain"
+
 class InterpolationType(enum.Enum):
     continuous = 'http://www.opengis.net/def/waterml/2.0/interpolationType/Continuous'
     discontinuous = 'http://www.opengis.net/def/waterml/2.0/interpolationType/Discontinuous'
@@ -314,6 +318,9 @@ class StreamMetaData(Model):
         self._type = None
         self._interpolation_type = None
 
+        # document only attrs
+        self._mimetype = None
+
         # scalar only attrs
         self._observed_property = None
         self.cumulative = None
@@ -354,6 +361,14 @@ class StreamMetaData(Model):
 
         if self.length_unit:
             pickled["lengthUnit"] = self.length_unit
+
+        # clean up non document StreamMetaData keys
+        if self._type != StreamMetaDataType.document:
+            for key in ['mimetype']:
+                try:
+                    del pickled[key]
+                except KeyError:
+                    pass
 
         # clean up non scalar StreamMetaData keys
         if self._type != StreamMetaDataType.scalar and self._type != StreamMetaDataType.regularly_binned_vector:
@@ -402,6 +417,10 @@ class StreamMetaData(Model):
             raise SenapsError("Stream creation requires an type.")
         if self.type is not None:
             pickled["type"] = self._type.value
+
+        if self.mimetype is not None:
+            pickled["mimetype"] = self._mimetype.value
+
         if self.length is not None:
             pickled["length"] = self._length
 
@@ -424,6 +443,8 @@ class StreamMetaData(Model):
         for k, v in json_frag.items():
             if k == "type":
                 setattr(stream_meta_data, "type", StreamMetaDataType(v))
+            elif k == "mimetype":
+                setattr(stream_meta_data, "mimetype", StreamMetaDataMimeType(v))
             elif k == "_embedded":
                 for ek, ev in v.items():
                     if ek == "interpolationType":
@@ -459,6 +480,14 @@ class StreamMetaData(Model):
     @type.setter
     def type(self, value):
         self._type = value
+
+    @property
+    def mimetype(self):
+        return self._mimetype
+
+    @mimetype.setter
+    def mimetype(self, value):
+        self._mimetype = value
 
     @property
     def interpolation_type(self):
