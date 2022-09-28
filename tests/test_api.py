@@ -29,7 +29,7 @@ import uuid
 
 from senaps_sensor.error import SenapsError
 from senaps_sensor.models import Deployment, Organisation, Group, Platform, Stream, StreamResultType, StreamMetaData, \
-    StreamMetaDataType, \
+    StreamMetaDataType, StreamMetaDataMimeType, \
     InterpolationType, Observation, UnivariateResult, Location, User, Role
 
 from senaps_sensor.const import VALID_PROTOCOLS
@@ -132,6 +132,13 @@ class ApiTestCase(SensorApiTestCase):
         sm.length_unit = "http://registry.it.csiro.au/def/qudt/1.1/qudt-unit/Angstrom"
 
         s = self._generate_stream(StreamResultType.vector, sm, stream_id)
+        return s
+
+    def generate_document_stream(self, stream_id=None, mimetype=StreamMetaDataMimeType.json):
+        sm = StreamMetaData()
+        sm.type = StreamMetaDataType.document
+        sm.mimetype = mimetype
+        s = self._generate_stream(StreamResultType.document, sm, stream_id)
         return s
 
     def generate_group(self, id):
@@ -543,6 +550,79 @@ class ApiTestCase(SensorApiTestCase):
 
         self.api.destroy_stream(id=s.id)
 
+    @tape.use_cassette('test_create_document_json_stream.json')
+    def test_create_document_json_stream(self):
+        s = self.generate_document_stream()
+
+        required_state = {
+            "id": s.id,
+            "resulttype": "documentvalue",
+            "organisationid": s.organisations[0].id,
+            "reportingPeriod": 'P1D',
+            "samplePeriod": 'PT10S',
+            "streamMetadata": {
+                "type": ".DocumentStreamMetaData",
+                "mimetype": "application/json"
+            }
+        }
+        required_json = dumps(required_state, sort_keys=True)  # be explict with key order since dumps gives us a string
+
+        actual_state = s.to_state("create")
+        actual_json = s.to_json("create")
+
+        # dict diff
+        # from deepdiff import DeepDiff
+        # diff = DeepDiff(required_state, actual_state)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        created_stream = self.api.create_stream(s)
+
+        self.assertEqual(s.id, created_stream.id)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        self.api.destroy_stream(id=s.id)
+
+    @tape.use_cassette('test_create_document_json_stream.json')
+    def test_create_document_text_stream(self):
+        s = self.generate_document_stream(mimetype=StreamMetaDataMimeType.text)
+
+        required_state = {
+            "id": s.id,
+            "resulttype": "documentvalue",
+            "organisationid": s.organisations[0].id,
+            "reportingPeriod": 'P1D',
+            "samplePeriod": 'PT10S',
+            "streamMetadata": {
+                "type": ".DocumentStreamMetaData",
+                "mimetype": "text/plain"
+            }
+        }
+        required_json = dumps(required_state, sort_keys=True)  # be explict with key order since dumps gives us a string
+
+        actual_state = s.to_state("create")
+        actual_json = s.to_json("create")
+
+        # dict diff
+        # from deepdiff import DeepDiff
+        # diff = DeepDiff(required_state, actual_state)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        created_stream = self.api.create_stream(s)
+
+        self.assertEqual(s.id, created_stream.id)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        self.api.destroy_stream(id=s.id)
+
+
     @tape.use_cassette('test_create_image_stream.json')
     def test_create_image_stream(self):
         s = self.generate_image_stream("403e2a68-7e4c-43e3-93d4-71d8980014fa")
@@ -682,6 +762,48 @@ class ApiTestCase(SensorApiTestCase):
             item.v = {
                 'v': p.get('v')
             }
+            o.results.append(item)
+
+        return o, points
+
+    def generate_document_json_observations(self):
+
+        o = Observation()
+
+        dt = datetime.datetime(2016, 2, 15, 0, 0, 0)
+        dt_td = datetime.timedelta(minutes=15)
+
+        points = [
+            {'time': dt + (dt_td * 0), 'v': {'j': {'propa': 'valuea', 'propb': 1}}},
+            {'time': dt + (dt_td * 1), 'v': {'j': {'propa': 'valueb', 'propb': 2}}},
+            {'time': dt + (dt_td * 2), 'v': {'j': {'propa': 'valuec', 'propb': 3}}},
+        ]
+
+        for p in points:
+            item = UnivariateResult()
+            item.t = p.get('time')
+            item.v = p.get('v')
+            o.results.append(item)
+
+        return o, points
+
+    def generate_document_text_observations(self):
+
+        o = Observation()
+
+        dt = datetime.datetime(2016, 2, 15, 0, 0, 0)
+        dt_td = datetime.timedelta(minutes=15)
+
+        points = [
+            {'time': dt + (dt_td * 0), 'v': {'d': "blah"}},
+            {'time': dt + (dt_td * 1), 'v': {'d': "blah2"}},
+            {'time': dt + (dt_td * 2), 'v': {'d': "blah3\nblah4"}},
+        ]
+
+        for p in points:
+            item = UnivariateResult()
+            item.t = p.get('time')
+            item.v = p.get('v')
             o.results.append(item)
 
         return o, points
@@ -1010,6 +1132,102 @@ class ApiTestCase(SensorApiTestCase):
         created_observation = self.api.create_observations(o, streamid=s.id)
 
         print("done creating observations %s" % s.id)
+        self.assertEqual(created_observation.get('message'), "Observations uploaded")
+        self.assertEqual(created_observation.get('status'), 201)
+
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
+
+    @tape.use_cassette('test_create_document_json_observations.json')
+    def test_create_document_json_observations(self):
+        s = self.generate_document_stream()
+
+        o, points = self.generate_document_json_observations()
+
+        dt_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+        required_state = {
+            'results': [
+                {
+                    't': points[0].get('time').strftime(dt_format),
+                    'v': points[0].get('v')
+                },
+                {
+                    't': points[1].get('time').strftime(dt_format),
+                    'v': points[1].get('v')
+                },
+                {
+                    't': points[2].get('time').strftime(dt_format),
+                    'v': points[2].get('v')
+                },
+            ]
+        }
+        required_json = dumps(required_state, sort_keys=True)  # be explict with key order since dumps gives us a string
+
+        actual_state = o.to_state("create")
+        actual_json = o.to_json("create")
+
+        ### dict diff debugging
+        # from deepdiff import DeepDiff
+        # diff = DeepDiff(required_state, actual_state)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        print("creating stream %s" % s)
+        created_stream = self.api.create_stream(s)
+
+        self.assertEqual(created_stream.id, s.id)
+
+        created_observation = self.api.create_observations(o, streamid=s.id)
+
+        self.assertEqual(created_observation.get('message'), "Observations uploaded")
+        self.assertEqual(created_observation.get('status'), 201)
+
+        self.api.destroy_observations(streamid=s.id)
+        self.api.destroy_stream(id=s.id)
+
+    @tape.use_cassette('test_create_document_text_observations.json')
+    def test_create_document_text_observations(self):
+        s = self.generate_document_stream(mimetype=StreamMetaDataMimeType.text)
+
+        o, points = self.generate_document_text_observations()
+
+        dt_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+        required_state = {
+            'results': [
+                {
+                    't': points[0].get('time').strftime(dt_format),
+                    'v': points[0].get('v')
+                },
+                {
+                    't': points[1].get('time').strftime(dt_format),
+                    'v': points[1].get('v')
+                },
+                {
+                    't': points[2].get('time').strftime(dt_format),
+                    'v': points[2].get('v')
+                },
+            ]
+        }
+        required_json = dumps(required_state, sort_keys=True)  # be explict with key order since dumps gives us a string
+
+        actual_state = o.to_state("create")
+        actual_json = o.to_json("create")
+
+        ### dict diff debugging
+        # from deepdiff import DeepDiff
+        # diff = DeepDiff(required_state, actual_state)
+
+        # verify json
+        self.assertEqual(actual_json, required_json)
+
+        print("creating stream %s" % s)
+        created_stream = self.api.create_stream(s)
+
+        self.assertEqual(created_stream.id, s.id)
+
+        created_observation = self.api.create_observations(o, streamid=s.id)
+
         self.assertEqual(created_observation.get('message'), "Observations uploaded")
         self.assertEqual(created_observation.get('status'), 201)
 
