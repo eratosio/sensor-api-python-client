@@ -27,6 +27,11 @@ jobs:
       - name: Install dependencies
         run: pip install .
 
+      # this is supposedly required for licensing metadata to go through
+      # without having to change the build system to hatchling
+      - name: Purge PIP Cache
+        run: pip cache purge
+
       - name: Build the package
         run: hatch build
 
