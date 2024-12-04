@@ -1,12 +1,12 @@
-
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.26.1"]
+build-backend = "hatchling.build"
 
 [project]
 name = "senaps_sensor"
+requires-python = ">=2.7"
 description = "Senaps Sensor Data API Client"
-readme = "readme.md"
+readme = "README.md"
 dynamic = ["version"]
 license = { text = "MIT License" }
 authors = [{ name = "CSIRO Data61", email = "senaps@csiro.au" }]
@@ -27,10 +27,12 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.4",
 ]
-requires-python = ">=2.7"
 
 [project.optional-dependencies]
 pandas = ["pandas>=0.18.1,<=0.25.3"]
 
-[tool.setuptools.packages]
-find = { where = ["src"], exclude = ["tests"] }
+[tool.hatch.version]
+path = "src/senaps_sensor/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/senaps_sensor"]
