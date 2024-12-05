@@ -3,8 +3,8 @@ requires = ["hatchling>=1.26.1"]
 build-backend = "hatchling.build"
 
 [project]
-name = "senaps-sensor"
-requires-python = ">=2.7"
+name = "eratos-sensor-client"
+requires-python = ">=3.7"
 description = "Senaps Sensor Data API Client"
 readme = "README.md"
 dynamic = ["version"]
@@ -22,10 +22,6 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 2",
-  "Programming Language :: Python :: 2.7",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.4",
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
@@ -34,8 +30,6 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 
-[project.optional-dependencies]
-pandas = ["pandas>=0.18.1,<=0.25.3"]
 
 [tool.hatch.version]
 path = "src/senaps_sensor/__init__.py"
