@@ -20,6 +20,9 @@ else:
 AUTHOR = "CSIRO Data61"
 AUTHOR_EMAIL = "senaps@csiro.au"
 
+with open('readme.md') as f:
+    DESCRIPTION = f.read()
+
 setup(name="senaps_sensor",
       version=version,
       description="Senaps Sensor Data API Client",
@@ -31,6 +34,7 @@ setup(name="senaps_sensor",
       url="https://bitbucket.csiro.au/projects/SC/repos/sensor-api-python-client/browse",
       packages=find_packages(where='src', exclude=['tests']),
       package_dir={'': 'src'},
+      long_description=DESCRIPTION,
       install_requires=[
           'requests>=2.22.0,<3.0.0',
           'six>=1.7.3',
