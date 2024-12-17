@@ -10,6 +10,7 @@ readme = "README.md"
 dynamic = ["version"]
 license = { text = "MIT License" }
 authors = [{ name = "CSIRO Data61", email = "senaps@csiro.au" }]
+maintainers = [{ name = "Eratos", email = "support@eratos.com" }]
 keywords = ["senaps", "sensor", "api", "client", "library"]
 dependencies = [
   "requests>=2.22.0,<3.0.0",
