@@ -31,6 +31,8 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 
+[project.urls]
+Homepage = "https://bitbucket.csiro.au/projects/SC/repos/sensor-api-python-client/browse"
 
 [tool.hatch.version]
 path = "src/senaps_sensor/__init__.py"
