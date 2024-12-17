@@ -3,7 +3,7 @@ requires = ["hatchling>=1.26.1"]
 build-backend = "hatchling.build"
 
 [project]
-name = "eratos-sensor-client"
+name = "eratos-sensor"
 requires-python = ">=3.7"
 description = "Senaps Sensor Data API Client"
 readme = "README.md"
