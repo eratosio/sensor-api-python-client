@@ -306,6 +306,7 @@ class API(object):
                 'usermetadatavalues',
                 'expand',
                 'recursive',
+                'limit'
             ],
             require_auth=True,
         )
