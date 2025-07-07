@@ -7,6 +7,7 @@ dist/
 *.egg-info
 
 .tox/
+.env/
 venv/
 venv35/
 venv36/

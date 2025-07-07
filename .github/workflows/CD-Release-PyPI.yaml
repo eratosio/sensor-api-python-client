@@ -1,0 +1,43 @@
+name: CD - PyPi - Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          # either build for 11 or latest 12? unit tests will cover compatibility
+          # and whl is installable in all python 3 versions
+          python-version: "3.11"
+
+      - name: Install Hatch
+        run: pip install hatch
+
+      - name: Install dependencies
+        run: pip install .
+
+      # this is supposedly required for licensing metadata to go through
+      # without having to change the build system to hatchling
+      - name: Purge PIP Cache
+        run: pip cache purge
+
+      - name: Build the package
+        run: hatch build
+
+      - name: Publish to PyPI
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN}}
+        run: hatch publish --repo main
