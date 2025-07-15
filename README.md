@@ -10,7 +10,7 @@ Installation
 
 Install from the default branch:
 
-    $ pip install -e git+https://github.com/eratosio/sensor-api-python-client.git#egg=eratos-sensor
+    $ pip install eratos-sensor
 
 Or install from a tag:
 
