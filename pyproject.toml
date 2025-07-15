@@ -32,7 +32,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/eratosio/sensor-api-python-client/tree/eratos-master"
+Homepage = "https://github.com/eratosio/sensor-api-python-client"
 
 [tool.hatch.version]
 path = "src/senaps_sensor/__init__.py"
