@@ -35,7 +35,10 @@ Clone the project from github:
     $ git clone https://github.com/eratosio/sensor-api-python-client.git
     $ cd sensor-api-python-client
 
-Create a python virtual environment, then install the requirements as below:
+Use `hatch` to automatically create a virtual envrionment with the project installed in editable mode, 
+    $ hatch env create
+    $ hatch shell
+or set up a virtual environment manually -
 
     $ (venv) pip install -r requirements.txt && pip install -r test_requirements.txt
 
