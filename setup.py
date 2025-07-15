@@ -31,7 +31,7 @@ setup(name="senaps_sensor",
       author_email=AUTHOR_EMAIL,
       maintainer=AUTHOR,
       maintainer_email=AUTHOR_EMAIL,
-      url="https://github.com/eratosio/sensor-api-python-client/tree/eratos-master",
+      url="https://github.com/eratosio/sensor-api-python-client"
       packages=find_packages(where='src', exclude=['tests']),
       package_dir={'': 'src'},
       long_description=DESCRIPTION,
